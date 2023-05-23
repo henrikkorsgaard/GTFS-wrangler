@@ -2,11 +2,17 @@ package main
  
 import (
   "log"
+
   "net/http"
   "fmt"
-  "github.com/gorilla/mux"
 
+  "github.com/gorilla/mux"
 )
+
+
+/* 
+Deploy via Docker
+*/
 
 func main() {
   r := mux.NewRouter()
@@ -38,5 +44,3 @@ func gtfsHandler(w http.ResponseWriter, req *http.Request){
   fmt.Fprintf(w, "Successfully Uploaded File\n")
 
 }
-
-
