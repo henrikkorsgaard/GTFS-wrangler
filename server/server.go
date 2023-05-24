@@ -7,6 +7,8 @@ import (
   "github.com/gofiber/fiber/v2/middleware/cors" // not sure we need this anymore.
   "github.com/gofiber/websocket/v2"
 
+  "henrikkorsgaard.dk/GTFS-wrangler/gtfs"
+
 )
 // Let's try out fiber
 // https://gofiber.io/
@@ -48,9 +50,14 @@ func websocketGTFSHandler(c *websocket.Conn) {
       
     }
     
-    fmt.Println(message)
+    gtfsDir, err := gtfs.UnzipGTFSFromBytes(message)
     
+    if err != nil {
+      fmt.Println(err)
+    }
 
+    //Now I wonder if it makes sense to return a list of paths instead. Then we can check if there are any and then ignore emitting error from the unzipper!
+    fmt.Println(gtfsDir)
   }
 }
 

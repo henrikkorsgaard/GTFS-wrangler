@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+//TODO: we need an error message there are no GTFS files in the provided zip.
 
-// We want to test unzipping given a file
-
+// We want to test unzipping given a []byte
 func TestUnzipGTFSFromBytes(t *testing.T){
 
 	expectedFileNames := []string{"agency.txt", "attributions.txt", "calendar.txt","shapes.txt","trips.txt","routes.txt","stops.txt","stop_times.txt","transfers.txt"}
