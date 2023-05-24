@@ -7,6 +7,7 @@ import (
 	"archive/zip"
 	"path/filepath"
 	"io"
+	"bytes"
 )
 
 var (
@@ -24,8 +25,36 @@ func init(){
 	os.Mkdir(tempDir, os.ModePerm)
 }
 
-func unzipGTFS(src string) (gtfsDir string, err error){
+
+func UnzipGTFSFromBytes(zbytes []byte) (gtfsDir string, err error) {
+	//fast wrap would be to just create the file in the temp dir and then go from there.
+	reader := bytes.NewReader(zbytes)
+    zreader, err := zip.NewReader(reader, int64(len(zbytes)))
+	/*
+	The recommended way is to open a file and then get a ReadCloser, to close the zip file.
+	See: https://pkg.go.dev/archive/zip#ReadCloser.Close
+
+	But since we are not providing any zipfile, ReadCloser.Close() will fail, because it is trying to close a non-existing file. See
+	https://cs.opensource.google/go/go/+/refs/tags/go1.20.4:src/archive/zip/reader.go;drc=145dd38471fe5e14b8a77f5f466b70ab49c9a62b;l=51
+
+	Conclusion, we do not use a closer, because there is no file to close.
+	*/
+
+	gtfsDir, err = createUnzipDir()
+	if err != nil {
+		return
+	}
 	
+	for _, file := range zreader.File {
+		// Errors from here should be logged somewhere.
+		extractZipFile(file, gtfsDir)
+	}
+	
+	return
+} 
+
+func unzipGTFSFromFile(src string) (gtfsDir string, err error){
+	// we do not want to provide a src, but a 
 	reader, err := zip.OpenReader(src)
 	if err != nil {
 	  return
@@ -100,3 +129,18 @@ func extractZipFile(file *zip.File, pathDir string) (err error) {
 	return
 }
 
+
+func createUnzipDir() (gtfsDir string, err error) {
+	id := uuid.New()
+	gtfsDir, err = filepath.Abs(tempDir + "GTFS_" + id.String() + "/")
+	if err != nil {
+		return
+	}
+	
+	err = os.Mkdir(gtfsDir, os.ModePerm)
+	if err != nil {
+		return
+	}
+
+	return
+}
