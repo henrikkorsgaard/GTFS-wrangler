@@ -52,39 +52,6 @@ func UnzipGTFSFromBytes(zbytes []byte) (gtfsDir string, err error) {
 	
 	return
 } 
-
-func unzipGTFSFromFile(src string) (gtfsDir string, err error){
-	// we do not want to provide a src, but a 
-	reader, err := zip.OpenReader(src)
-	if err != nil {
-	  return
-	}
-
-	defer func(){ //When done we want to close. Since reader.close can error, we want to panic on that
-	  if err := reader.Close(); err != nil {
-		panic(err) 
-	  }
-	}()//call the anon defer function
-  
-	id := uuid.New()
-	gtfsDir, err = filepath.Abs(tempDir + "GTFS_" + id.String() + "/")
-	if err != nil {
-		return
-	}
-	
-	err = os.Mkdir(gtfsDir, os.ModePerm)
-	if err != nil {
-		return
-	}
-
-	//Iterates over zip.File (and not os.File)
-	for _, file := range reader.File {
-		// Errors from here should be logged somewhere.
-		extractZipFile(file, gtfsDir)
-	}
-
-	return 
-}
   
 func extractZipFile(file *zip.File, pathDir string) (err error) {
 	
