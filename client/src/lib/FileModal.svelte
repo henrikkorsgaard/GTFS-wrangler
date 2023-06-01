@@ -11,13 +11,10 @@
         
         if(files && files[0]){
 
-            // actually, I'd rather do a websocket connection here because I cannot get the progress in unpacking the file etc. 
-            var formData = new FormData()
-            formData.append("file", files[0])
-            console.log(files[0])
-
             //There is something with the flow here!
             let socket = new WebSocket("ws://localhost:3000/ws/gtfs")
+            var formData = new FormData()
+            formData.append("file", files[0])
 
             socket.onopen  = function(evt) {
                 console.log("websocket connection opened!")
@@ -40,6 +37,7 @@
 
             socket.onmessage = function(evt){
                 console.log(evt)
+                //Do we want to close it after?
             }
            
             socket.onerror = function(err){
