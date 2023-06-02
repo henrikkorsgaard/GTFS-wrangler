@@ -92,6 +92,8 @@ func loadAgenciesFromFilePath(filepath string) (agencies []Agency, err error) {
 	return
 }
 
+
+// This is a util function
 func readFileIntoLines(filepath string) (lines []string, err error) {
 
 	readFile, err := os.Open(filepath)
@@ -152,15 +154,4 @@ func hasRequiredAgencyFields(fields []string) (valid bool) {
 	}
 	
 	return
-}
-
-
-//util function that is useful for more than one file
-func contains(stringSlice []string, target string) bool {
-	for _, s := range stringSlice {
-		if s == target {
-			return true
-		}
-	}
-	return false
 }
