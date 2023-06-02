@@ -1,157 +1,106 @@
 package gtfs
 
 import (
+	"encoding/csv"
 	"os"
-	"bufio"
-	"strings"
-	"errors"	
+	"errors"
+	"reflect"
+	"strconv"
 )
 
-var (
-	//We use the following map for checking validity and expected fields
-	//true indicates required field per spec and false optional field.
-	//see  https://developers.google.com/transit/gtfs/reference#agencytxt
-	agencyFields = map[string]bool{
-		"agency_id": true,
-		"agency_name": true,
-		"agency_url": true,
-		"agency_timezone": true,
-		"agency_lang": false,
-		"agency_phone": false,
-		"agency_fare_url": false,
-		"agency_email": false,
-	}
-)
 
 type Agency struct {
-	ID       	string
-	Name     	string
-	URL			string
-	Timezone	string
-	Lang		string
-	Phone    	string
+	ID			string `csv:"agency_id" required:"true"`
+	Name	 	string `csv:"agency_name" required:"true"`
+	URL			string `csv:"agency_url" required:"true"`
+	Timezone	string `csv:"agency_timezone" required:"true"`
+	Lang		string `csv:"agency_lang" required:"false"`
+	Phone    	string `csv:"agency_phone" required:"false"`
+	FareURL		string `csv:"agency_fare_url" required:"false"`
+	Email 		string `csv:"agency_email" required:"false"`
 }
 
-// I don't want to use some of the csv unmarshall libraries because they seem to be buggy
-// I know the file and the target struct, so this should just be a dedicated unmarshal
-func loadAgenciesFromFilePath(filepath string) (agencies []Agency, err error) {
+func unmarshalAgency(row map[string]string) (agency Agency, err error) {
+	
+	ref := reflect.ValueOf(&agency).Elem()
+	
+	fields := reflect.VisibleFields(reflect.TypeOf(agency))
+	for _, field := range fields {
+		
+		csvKey := field.Tag.Get("csv")
+		required := field.Tag.Get("required")
+		isRequired, err := strconv.ParseBool(required)
+		if err != nil {
+			break
+		}
 
-	lines, err := readFileIntoLines(filepath)
+		_, ok :=  row[csvKey]
+
+		if isRequired && !ok {
+			err = errors.New("Agency.txt does not contain rows with data for the required fields!")
+			break
+		}
+		ref.FieldByName(field.Name).SetString(row[csvKey])
+	}
+	
+	return
+}
+
+func loadAgenciesFromCSVFilePath(filepath string) (agencies []Agency, err error){
+
+	csvfile, err := os.Open(filepath)
 	if err != nil {
 		return
 	}
 
-	stripped := strings.ReplaceAll(lines[0], "\"", "")
-	fields := strings.Split(stripped, ",")
-	
-	if(!hasRequiredAgencyFields(fields)){
-		err = errors.New("Invalid agency.txt file. Headers does not match expectation!")
+	r := csv.NewReader(csvfile)
+	all, err := r.ReadAll()
+
+	if err != nil {
 		return
 	}
 
-	fieldIndexes := getValidFieldColumnIndex(fields)
-
-	// we skip first line because it's headers!
-	for _, row := range lines[1:]{
-		stripped = strings.ReplaceAll(row, "\"", "")
-		vals := strings.Split(stripped, ",")
-
-		// This is somewhat ceremonial to flag for data inconcistency in header/row
-		if len(vals) != len(fieldIndexes) {
-			err = errors.New("Error: Mismatch between number of fields and row index!")
-			return
-		}
-		
-		agency := Agency{
-			ID: vals[fieldIndexes["agency_id"]],
-			Name: vals[fieldIndexes["agency_name"]],
-			URL: vals[fieldIndexes["agency_url"]],
-			Timezone: vals[fieldIndexes["agency_timezone"]],
+	for i, row := range all {
+		rowmap := map[string]string{}
+		for i, item := range row {
+			rowmap[all[0][i]] = item
 		}
 
-		if _, ok := fieldIndexes["agency_lang"]; ok {
-			agency.Lang = vals[fieldIndexes["agency_lang"]]
+		if i == 0 && !isValidHeaderFields(rowmap) {
+			err = errors.New("Agency.txt does not contain the required fields!")
+			break
 		}
 
-		if _, ok := fieldIndexes["agency_phone"]; ok {
-			agency.Lang = vals[fieldIndexes["agency_phone"]]
+		agency, err := unmarshalAgency(rowmap)
+		if err != nil {
+			break
 		}
-
-		if _, ok := fieldIndexes["agency_fare_url"]; ok {
-			agency.Lang = vals[fieldIndexes["agency_fare_url"]]
-		}
-
-		if _, ok := fieldIndexes["agency_email"]; ok {
-			agency.Lang = vals[fieldIndexes["agency_email"]]
-		}
-
 		agencies = append(agencies, agency)
-
-	}
-	
-	return
-}
-
-
-// This is a util function
-func readFileIntoLines(filepath string) (lines []string, err error) {
-
-	readFile, err := os.Open(filepath)
-    if err != nil {
-        return
-    }
-	defer readFile.Close()
-
-    fileScanner := bufio.NewScanner(readFile)
-    fileScanner.Split(bufio.ScanLines)
-    
-  
-    for fileScanner.Scan() {
-        lines = append(lines, fileScanner.Text())
-    }
-  
-    return
-}
-
-// We cannot assume that GTFS files are ordered according to spec.
-func getValidFieldColumnIndex(fields []string) (fieldIndexes map[string]int) {
-
-	fieldIndexes = make(map[string]int)
-
-	for index, field := range fields {
-		//we do not care about fields that are not in agencyFields
-		//this is a side effect call essentially ignoring invalid fields!
-		if _, ok := agencyFields[field]; ok {
-			fieldIndexes[field] = index
-		}
 	}
 
 	return
 }
 
-// currently just checking that the fields in the file are among the fields in the agency spec.
-// We need to check for required fields first, then for valid fields next
-func hasRequiredAgencyFields(fields []string) (valid bool) { 
-
-	// we do not cover the required vs the optional vs unexpected fields.
-	requiredFields := make(map[string]bool)
-	requiredCount := 0
-	for k, v := range agencyFields {
-		if v {
-			requiredFields[k] = false
-		}
-	}
-
+func isValidHeaderFields(header map[string]string)(valid bool){
+	a := Agency{}
+	valid = true
+	fields := reflect.VisibleFields(reflect.TypeOf(a))
 	for _, field := range fields {
-		if _, ok := requiredFields[field];ok {
-			requiredCount++
+		csvKey := field.Tag.Get("csv")
+		required := field.Tag.Get("required")
+		isRequired, err := strconv.ParseBool(required)
+		if err != nil {
+			break
+		}
+
+		_, ok :=  header[csvKey]
+
+		if isRequired && !ok {
+			valid = false
+			break
 		}
 	}
 	
-	if len(requiredFields) == requiredCount {
-		valid = true
-		
-	}
-	
-	return
+	return valid
 }
+
