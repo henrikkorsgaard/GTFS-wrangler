@@ -17,6 +17,7 @@ func TestUnzipGTFSFromBytes(t *testing.T){
 
 	expectedFileNames := []string{"agency.txt", "attributions.txt", "calendar.txt","shapes.txt","trips.txt","routes.txt","stops.txt","stop_times.txt","transfers.txt"}
 
+	// we should move to use data in the test_data dir asap.
 	gtfs, err := filepath.Abs("../../data/GTFS.zip")
 	if err != nil {
 		t.Error("filepath.Abs returned error: " + err.Error() + "\nPlease put a GTFS zip file into the data dir for test purpose")

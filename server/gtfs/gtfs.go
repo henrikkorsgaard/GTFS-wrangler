@@ -57,6 +57,7 @@ func extractZipFile(file *zip.File, pathDir string) (err error) {
 	
 	//Guard function to deal with polluted zips
 	//We cannot safeguard against engineered zips at this point. 
+	//but given this will run in a docker, we should be safe. Worst case, the user ruins the docker instance
 	if !validGTFSfilenames[file.Name] || file.FileInfo().IsDir() {
 		err = fmt.Errorf("Unexpected file/directory in GTFS zip: " + file.Name + ". Skipping unzip of this particular file/directory. See https://developers.google.com/transit/gtfs/reference#dataset_files for expected file names.")
 	}

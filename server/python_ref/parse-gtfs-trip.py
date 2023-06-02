@@ -55,8 +55,6 @@ with open("input/GTFS/stops.txt", "r", encoding="utf8") as sfile:
                     stop["lng"] = row[5]
 
 
-
-
 features = []
 coordinates = []
 latlngs = []

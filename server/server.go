@@ -78,7 +78,7 @@ func fileUploadHandler(c *fiber.Ctx) error {
   if err != nil {
       panic(err)
   }
-  fmt.Println(file)
+  fmt.Println(file) // ok, we got it. Back to making tests and implementation
   return c.SendString("Hello, World!")
 }
 
