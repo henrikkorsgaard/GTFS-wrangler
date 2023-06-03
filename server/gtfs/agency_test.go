@@ -3,15 +3,19 @@ package gtfs
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
+
+	"fmt"
 )
 
 func TestLoadingAgencyFromFileHeaderError(t *testing.T){
 	_, err := loadAgenciesFromCSVFilePath("./test_data/agency_invalid_header.txt")
+	fmt.Println(err)
 	assert.Error(t, err)
 }
 
 func TestLoadingAgencyFromFileRowError(t *testing.T){
 	_, err := loadAgenciesFromCSVFilePath("./test_data/agency_invalid_row.txt")
+	fmt.Println(err)
 	assert.Error(t, err)
 }
 
