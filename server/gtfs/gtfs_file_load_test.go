@@ -6,17 +6,32 @@ import (
 )
 
 
-func TestLoadingStopTimeFromCSVFileSlice(t *testing.T){
+func TestLoadingStopTimeFromCSVFile(t *testing.T){
 
-	stopTimes, err := loadStopTimesSlice("./test_data/stop_times.txt")
-	if err != nil {
-		t.Error("loadStopTimesFromFile returned unexpected error: " + err.Error())
+	progress := make(chan int)
+	errs := make(chan error)
+
+	stopTimes := []StopTime{}
+
+	go LoadGTFSFromCSVFilePath("./test_data/stop_times_short.txt", &stopTimes, progress, errs)
+
+	for {
+		done := false
+		select {
+			case err := <- errs:
+				t.Error("LoadGTFSFromCSVFilePath returned unexpected error:\n\t ==>" + err.Error())
+				done = true
+			case p := <- progress:
+				if p == -1 {
+					done = true
+					break
+				} 
+		}
+		if done {
+			break
+		}
 	}
 
-	if len(stopTimes) == 0 {
-		t.Error("loadRoutesFromFile returned []StopTime with length of zero!")
-	}
-	
 	for _, stoptime := range stopTimes {
 		assert.NotNil(t, stoptime.TripID)
 		assert.NotNil(t, stoptime.Arrival)
@@ -26,7 +41,13 @@ func TestLoadingStopTimeFromCSVFileSlice(t *testing.T){
 	}
 }
 
-func TestLoadingStopTimeFromCSVFileSliceMissingRequiredField(t *testing.T){
+
+func TestLoadingStopTimeFromCSVFileMissingFile(t *testing.T){
+	_, err := loadStopTimesSlice("./test_data/stop_times_non_existing_file.txt")
+	assert.Error(t, err)
+}
+
+func TestLoadingStopTimeFromCSVFileMissingRequiredField(t *testing.T){
 	_, err := loadStopTimesSlice("./test_data/stop_times_short_missing_required.txt")
 	assert.Error(t, err)
 }

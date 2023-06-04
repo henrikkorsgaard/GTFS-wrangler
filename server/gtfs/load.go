@@ -11,14 +11,14 @@ import (
 
 
 // Modified from by https://github.com/artonge/go-csv-tag/blob/4b40f225e91a009021bac2ae6fd04a3d90c58b12/load.go#L142
-func unmarshalSlice(header []string, rows[][]string, destination interface{}, progress chan int, errChan chan error) {
+func unmarshalSlice(header []string, rows[][]string, destination interface{}, progress chan int, errs chan error) {
 
 	if destination == nil {
-		errChan <- fmt.Errorf("destination slice is nil")
+		errs <- fmt.Errorf("destination slice is nil")
 	}
 
 	if reflect.TypeOf(destination).Elem().Kind() != reflect.Slice {
-		errChan <- fmt.Errorf("destination is not a slice")
+		errs <- fmt.Errorf("destination is not a slice")
 	}
 
 	// Map each header name to its index.
@@ -35,7 +35,7 @@ func unmarshalSlice(header []string, rows[][]string, destination interface{}, pr
 	)
 
 	if ok := hasRequiredFields(headerIndex, refSlice.Index(0)); !ok {
-		errChan <- fmt.Errorf("CSV Rows are missing required fields")
+		errs <- fmt.Errorf("CSV Rows are missing required fields")
 	}
 
 	for i, row := range rows {
@@ -52,14 +52,14 @@ func unmarshalSlice(header []string, rows[][]string, destination interface{}, pr
 				continue
 			}
 
-			position, ok := headerIndex[csvTag] //this does not yet account for required!
+			position, ok := headerIndex[csvTag] 
 			if !ok {
 				continue
 			}
 
 			err := storeValue(row[position], refStruct.Field(j))
 			if err != nil {
-				errChan <- fmt.Errorf("line: %v to slice: %v:\n	==> %v", row, refStruct, err)
+				errs <- fmt.Errorf("line: %v to slice: %v:\n	==> %v", row, refStruct, err)
 			}
 		}
 	}
@@ -123,16 +123,21 @@ func storeValue(rawValue string, valRv reflect.Value) error {
 }
 
 //This need to be generalized as well
-func loadFromCSVFilePath(filepath string) (data [][]string, err error){
+// do we just forward the channels?
+// yes,
+func LoadGTFSFromCSVFilePath(filepath string, destination interface{},progress chan int, errs chan error) {
 
 	csvfile, err := os.Open(filepath)
 	if err != nil {
-		return
+		errs <- err
 	} 
 	defer csvfile.Close()
 
 	r := csv.NewReader(csvfile)
-	data, err = r.ReadAll()
+	data, err := r.ReadAll()
+	if err != nil {
+		errs <- err
+	}
 
-	return
+	unmarshalSlice(data[0], data[1:], destination, progress, errs)
 }

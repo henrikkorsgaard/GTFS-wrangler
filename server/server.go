@@ -40,7 +40,7 @@ func mainPage(c *fiber.Ctx) error {
 
 // need to look at error handling. That's gotta be a small thesis for me to grokk by now :)
 func websocketGTFSHandler(c *websocket.Conn) {
-  
+  // we cannot seperate between the message with bits or a different message.
   for {
     _, message, err := c.ReadMessage()
     if err != nil {
