@@ -1,9 +1,7 @@
 package gtfs
 
 import (
-	//"errors"
-	"strings"
-	
+
 )
 
 // Spec: https://developers.google.com/transit/gtfs/reference#routestxt
@@ -25,61 +23,18 @@ type StopTime struct {
 }
 
 // Doing a dedicated instantiation will be so much faster! like factor 6
-func loadStopTimes(filepath string) (stopTimes []StopTime, err error){
-
-	rows, err := loadFromCSVFilePath(filepath)
-	header := rows[0]
-
-	// Map header index
-	// We need this to create the mapping between a row value and struct field
-	headerIndex := make(map[string]int)
-	for i, name := range header {
-		headerIndex[strings.TrimSpace(name)] = i
-	}
-	
-
-	tripPos, _ := headerIndex["trip_id"]
-	arrivalPos, _ := headerIndex["trip_id"]
-	departPos, _ := headerIndex["trip_id"]
-	stopPos, _ := headerIndex["trip_id"]
-	stopSeqPos, _ := headerIndex["trip_id"]
-
-	for _, row := range rows[1:] {
-		stopTime := StopTime{
-			TripID: row[tripPos],
-			Arrival: row[arrivalPos],
-			Departure: row[departPos],
-			StopID: row[stopPos],
-			StopSequence: row[stopSeqPos],
-		}
-		/*
-		if i == 0 && !hasValidHeaderFields(rowmap, &StopTime{}) {
-			err = errors.New("Agency.txt does not contain the required fields!")
-			break
-		// we gonna skip the first row
-		} else if i == 0 {
-			continue
-		}*/
-
-		/*
-		stopTime := StopTime{}
-		err := unmarshal(rowmap, &stopTime)
-		if err != nil {
-			break
-		}*/
-		stopTimes = append(stopTimes, stopTime)
-	}
-	return 
-}
-
-
-// Doing a dedicated instantiation will be so much faster! like factor 6
 func loadStopTimesSlice(filepath string) (stopTimes []StopTime, err error){
 
 	progress := make(chan int)
 	errs := make(chan error)
 
 	rows, err := loadFromCSVFilePath(filepath)
+
+	if err != nil {
+		
+		return
+	}
+	
 	header := rows[0]
 	rows = rows[1:]
 	//stopTimes = []StopTime{}
