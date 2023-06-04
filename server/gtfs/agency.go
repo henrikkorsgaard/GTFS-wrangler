@@ -1,7 +1,7 @@
 package gtfs
 
 import (
-	"errors"
+	//"errors"
 	
 )
 
@@ -15,7 +15,7 @@ type Agency struct {
 	FareURL		string `csv:"agency_fare_url" required:"false"`
 	Email 		string `csv:"agency_email" required:"false"`
 }
-
+/*
 func loadAgencies(filepath string) (agencies []Agency, err error){
 	rows, err := loadFromCSVFilePath(filepath)
 
@@ -39,7 +39,7 @@ func loadAgencies(filepath string) (agencies []Agency, err error){
 		agencies = append(agencies, agency)
 	}
 	return 
-}
+}*/
 
 
 

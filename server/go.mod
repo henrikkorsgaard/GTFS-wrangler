@@ -3,6 +3,8 @@ module henrikkorsgaard.dk/GTFS-wrangler
 go 1.20
 
 require (
+	github.com/artonge/go-csv-tag/v2 v2.1.0
+	github.com/artonge/go-gtfs v1.3.2
 	github.com/gofiber/fiber/v2 v2.46.0
 	github.com/gofiber/websocket/v2 v2.2.1
 	github.com/google/uuid v1.3.0

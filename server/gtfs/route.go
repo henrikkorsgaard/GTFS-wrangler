@@ -1,7 +1,7 @@
 package gtfs
 
 import (
-	"errors"
+	//"errors"
 )
 
 // Spec: https://developers.google.com/transit/gtfs/reference#routestxt
@@ -40,7 +40,7 @@ func (rt RouteType) String() string {
 
 	return []string{"LightRail", "Metro", "Rail", "Bus", "Ferry", "CableTram","ArialLift","Funicular","unknown route type","unknown route type","unknown route type","TrollyBus", "Monorail"}[rt]
 }
-
+/*
 func loadRoutes(filepath string) (routes []Route, err error){
 	rows, err := loadFromCSVFilePath(filepath)
 
@@ -67,4 +67,4 @@ func loadRoutes(filepath string) (routes []Route, err error){
 		routes = append(routes, route)
 	}
 	return 
-}
+}*/

@@ -2,6 +2,8 @@ package gtfs
 
 import (
 	//"errors"
+	"strings"
+	
 )
 
 // Spec: https://developers.google.com/transit/gtfs/reference#routestxt
@@ -25,29 +27,30 @@ type StopTime struct {
 // Doing a dedicated instantiation will be so much faster! like factor 6
 func loadStopTimes(filepath string) (stopTimes []StopTime, err error){
 
-	// I need to write a faster way to do this
 	rows, err := loadFromCSVFilePath(filepath)
+	header := rows[0]
 
-	//is it faster to do it by row?
-
-
-	//if we want to return progres
-	//we need a chan and then return per row read
-
+	// Map header index
+	// We need this to create the mapping between a row value and struct field
+	headerIndex := make(map[string]int)
+	for i, name := range header {
+		headerIndex[strings.TrimSpace(name)] = i
+	}
 	
-	for _, row := range rows[1:] {
-		rowmap := map[string]string{}
-		// this doubles the runtime right there!
-		for i, item := range row {
-			rowmap[rows[0][i]] = item
-		}
 
+	tripPos, _ := headerIndex["trip_id"]
+	arrivalPos, _ := headerIndex["trip_id"]
+	departPos, _ := headerIndex["trip_id"]
+	stopPos, _ := headerIndex["trip_id"]
+	stopSeqPos, _ := headerIndex["trip_id"]
+
+	for _, row := range rows[1:] {
 		stopTime := StopTime{
-			TripID: rowmap["trip_id"],
-			Arrival: rowmap["arrival_time"],
-			Departure: rowmap["departure_time"],
-			StopID: rowmap["stop_id"],
-			StopSequence: rowmap["stop_sequence"],
+			TripID: row[tripPos],
+			Arrival: row[arrivalPos],
+			Departure: row[departPos],
+			StopID: row[stopPos],
+			StopSequence: row[stopSeqPos],
 		}
 		/*
 		if i == 0 && !hasValidHeaderFields(rowmap, &StopTime{}) {
@@ -66,5 +69,39 @@ func loadStopTimes(filepath string) (stopTimes []StopTime, err error){
 		}*/
 		stopTimes = append(stopTimes, stopTime)
 	}
+	return 
+}
+
+
+// Doing a dedicated instantiation will be so much faster! like factor 6
+func loadStopTimesSlice(filepath string) (stopTimes []StopTime, err error){
+
+	progress := make(chan int)
+	errs := make(chan error)
+
+	rows, err := loadFromCSVFilePath(filepath)
+	header := rows[0]
+	rows = rows[1:]
+	//stopTimes = []StopTime{}
+	go unmarshalSlice(header, rows, &stopTimes, progress, errs)
+
+	for {
+		done := false
+		select {
+			case err = <- errs:
+				done = true
+			case p := <- progress:
+				if p == -1 {
+					done = true
+					break
+				} 
+
+				//fmt.Printf("LoadStopTimesSlice is %d percent done!\n", p)
+		}
+		if done {
+			break
+		}
+	}
+
 	return 
 }
