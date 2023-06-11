@@ -1,31 +1,57 @@
 package gtfs
-
 /* Models based on spec: https://developers.google.com/transit/	gtfs/reference
  Currently only support primitive types, because I use golang reflect package to unmarshal
 
  I lump required and conditionally required together
  (until I see everythibg breaks)
+
+ TODO:
+ Change type for int and float
+ Capture enum types through int -> enum definition
+ See if we can doe something clever with reflect and structField tags to 
+ simplify the calls throughout
 */ 
 
-//Map containing filename as string and boolean indicating if file is required or optional per the spec
-var gtfsFilesRequirements = make(map[string]bool)
-gtfsFilesRequirements["agency.txt"] = true
-gtfsFilesRequirements["stops.txt"] = true
-gtfsFilesRequirements["routes.txt"] = true
-gtfsFilesRequirements["trips.txt"] = true
-gtfsFilesRequirements["stop_times.txt"] = true
-gtfsFilesRequirements["calendar.txt"] = true //Conditional, but will put this as required until I know if everything breaks
-gtfsFilesRequirements["calendar_dates.txt"] = true //Conditional
-gtfsFilesRequirements["fare_attributes.txt"] = false 
-gtfsFilesRequirements["fare_rules.txt"] = false 
-gtfsFilesRequirements["shapes.txt"] = false 
-gtfsFilesRequirements["frequencies.txt"] = false 
-gtfsFilesRequirements["transfers.txt"] = false 
-gtfsFilesRequirements["pathways.txt"] = false 
-gtfsFilesRequirements["levels.txt"] = false 
-gtfsFilesRequirements["feed_info.txt"] = false 
-gtfsFilesRequirements["translations.txt"] = false 
-gtfsFilesRequirements["attributions.txt"] = false 
+type GTFSLoadProgress struct {
+	FileName	string
+	Percent 	int 
+	RowLength	int
+	Index		int
+	Message 	string
+	Done		bool
+}
+
+type GTFS struct {
+	Agencies 		[]Agency		`csv:"agency.txt" required:"true"`
+	Stops 			[]Stop			`csv:"stops.txt" required:"true"`
+	Routes 			[]Route 		`csv:"routes.txt" required:"true"`
+	Trips 			[]Trip			`csv:"trips.txt" required:"true"`
+	StopTimes 		[]StopTime		`csv:"stop_times.txt" required:"true"`
+	Calendar 		[]Calendar		`csv:"calendar.txt" required:"true"`
+	CalendarDates	[]CalendarDate	`csv:"calendar_dates.txt" required:"true"`
+	FareAttributes 	[]FareAttribute	`csv:"fare_attributes.txt" required:"false"`
+	FareRules		[]FareRule 		`csv:"fare_rules.txt" required:"false"`
+	Shapes 			[]Shape 		`csv:"shapes.txt" required:"false"`
+	Frequencies		[]Frequency 	`csv:"frequencies.txt" required:"false"`
+	Transfers 		[]Transfer 		`csv:"transfers.txt" required:"false"`
+	Pathways 		[]Pathway		`csv:"pathways.txt" required:"false"`
+	Levels 			[]Level			`csv:"levels.txt" required:"false"`
+	FeedInfo 		[]FeedInfo 		`csv:"feed_info.txt" required:"false"`
+	Translations 	[]Translation 	`csv:"translations.txt" required:"false"`
+	Attributions 	[]Attribution	`csv:"attributions.txt" required:"false"`
+}
+
+/*
+	this would be a NewGTFSFromZipBytes(filename string, bytes[], process channel) (gtfs GTFS)
+
+*/
+
+/*
+	TODO
+		- make ints and doubles the proper type
+		- handle enums with enum int 
+		- add json annotation for front end parsing?
+*/ 
 
 // Spec: https://developers.google.com/transit/gtfs/reference#attributionstxt
 type Agency struct {
@@ -47,7 +73,7 @@ type Stop struct {
 	Description			string `csv:"stop_desc" required:"false"`
 	Lat					string `csv:"stop_lat" required:"true"`
 	Lon    				string `csv:"stop_lon" required:"true"`
-	ZoneId				string `csv:"zone_id" required:"true"`
+	ZoneId				string `csv:"zone_id" required:"false"`   // only required if having fare_rules.txt in the dataset. We need some way of validating that.
 	URL 				string `csv:"stop_url" required:"false"`
 	LocationType 		string `csv:"location_type" required:"false"`
 	ParentStation		string `csv:"parent_station" required:"true"`
@@ -129,7 +155,6 @@ type CalendarDate struct {
 }
 
 // Spec: https://developers.google.com/transit/gtfs/reference#fare_attributestxt
-
 type FareAttribute struct {
 	FareID					string `csv:"fare_id" required:"true"`
 	Price				string `csv:"price" required:"true"`
@@ -141,7 +166,6 @@ type FareAttribute struct {
 }
 
 // Spec: https://developers.google.com/transit/gtfs/reference#fare_rulestxt
-
 type FareRule struct {
 	FareID			string `csv:"fare_id" required:"true"`
 	RouteID			string `csv:"route_id" required:"false"`
@@ -151,8 +175,7 @@ type FareRule struct {
 }
 
 // Spec: https://developers.google.com/transit/gtfs/reference#shapestxt
-
-type Shape {
+type Shape struct {
 	ID					string `csv:"shape_id" required:"true"`
 	Lat					string `csv:"shape_pt_lat" required:"true"`
 	Lon					string `csv:"shape_pt_lon" required:"true"`
@@ -162,7 +185,6 @@ type Shape {
 
 
 // Spec: https://developers.google.com/transit/gtfs/reference#frequenciestxt
-
 type Frequency struct {
 	TripID		string `csv:"trip_id" required="true"`
 	StartTime	string `csv:"start_time" required="true"`
@@ -172,26 +194,59 @@ type Frequency struct {
 }
 
 // Spec: https://developers.google.com/transit/gtfs/reference#transferstxt
-
 type Transfer struct {
 	FromStopID		string `csv:"from_stop_id" required="true"`
 	ToStopID		string `csv:"to_stop_id" required="true"`
 	Type			string `csv:"transfer_type" required="true"`
 	MinTransferTime	string `csv:"min_transfer_time" required="false"`
 }
-
-//TODO PATHWAYS 
 // Spec: https://developers.google.com/transit/gtfs/reference#pathwaystxt
+type Pathway struct {
+	ID					string `csv:"pathway_id" required:"true"`
+	FromStopID			string `csv:"from_stop_id" required:"true"`
+	ToStopId			string `csv:"to_stop_id" required:"true"`
+	Mode				string `csv:"pathway_mode" required:"true"`
+	IsBidirectional		string `csv:"is_bidirectional" required:"true"`
+	Length				string `csv:"length" required:"false"`
+	TraversalTime		string `csv:"traversal_time" required:"false"`
+	StairCount			string `csv:"stair_count" required:"false"`
+	MaxSlope			string `csv:"max_slope" required:"false"`
+	MinWidth			string `csv:"min_width" required:"false"`
+	Signposted			string `csv:"signpost_as" required:"false"`
+	ReversedSignposted 	string `csv:"reversed_signposted_as" required:"false"`
+}
 
-//TODO LEVELS 
 // Spec: https://developers.google.com/transit/gtfs/reference#levelstxt
-
-//TODO FEED_INFO 
+type Level struct {
+	ID		string `csv:"level_id" required="true"`
+	Index	string `csv:"level_index" required="true"`
+	Name	string `csv:"level_name" required="false"`
+}
+ 
 // Spec: https://developers.google.com/transit/gtfs/reference#feed_infotxt
+type FeedInfo struct {
+	PublisherName	string `csv:"feed_publisher_name" required:"true"`
+	PublisherURL	string `csv:"feed_publisher_url" required:"true"`
+	Language		string `csv:"feed_lang" required:"true"`
+	DefaultLanguage	string `csv:"default_lang" required:"false"`
+	StartDate		string `csv:"feed_start_date" required:"false"`
+	EndDate			string `csv:"feed_end_date" required:"false"`
+	Version			string `csv:"feed_version" required:"false"`
+	ContactEmail	string `csv:"feed_contact_email" required:"false"`
+	ContactURL		string `csv:"feed_contact_url" required:"false"`
+}
 
-//TODO TRANSLATIONS
+
 // Spec: https://developers.google.com/transit/gtfs/reference#translationstxt
-
+type Translation struct {
+	TableName		string `csv:"table_name" required:"true"`
+	FieldName		string `csv:"field_name" required:"true"`
+	Language		string `csv:"language" required:"true"`
+	Translation		string `csv:"translation" required:"true"`
+	RecordID		string `csv:"record_id" required:"true"`
+	SubRecordID		string `csv:"record_sub_id" required:"true"`
+	FieldValue		string `csv:"field_value" required:"true"`			
+}
 
 // Spec: https://developers.google.com/transit/gtfs/reference#agencytxt
 type Attribution struct {

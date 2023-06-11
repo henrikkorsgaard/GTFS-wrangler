@@ -1,54 +1,87 @@
 package gtfs
 
 import (
-	"os"
-	"bufio"
-	"io"
-
 	"testing"
-	"path/filepath"
 	"github.com/stretchr/testify/assert"
+
+	"path/filepath"
+	"io"
+	"os"
+	"fmt"
+	"bufio"
 )
 
-//TODO: we need an error message there are no GTFS files in the provided zip.
+/*
+	TODO: Generate test data for all file types
+	TODO: Generate invalid test data 
+*/
 
-// We want to test unzipping given a []byte
+
 func TestUnzipGTFSFromBytes(t *testing.T){
+	
+	zbytes, err := getBytesFromZipFile()
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+	messages := make(chan GTFSLoadProgress)
+	errorChannel := make(chan error)
 
-	expectedFileNames := []string{"agency.txt", "attributions.txt", "calendar.txt","shapes.txt","trips.txt","routes.txt","stops.txt","stop_times.txt","transfers.txt"}
+	go func(){
+		for {
+			select {
+				case msg := <-messages:
+					fmt.Println(msg)
+					
+					if msg.FileName == "GTFS.zip" && msg.Done {
+						return
+					}
+			
+				case err := <-errorChannel:
+					fmt.Println(err)
+					return
+			}
+		}
+	}()
 
-	// we should move to use data in the test_data dir asap.
+	gtfs := NewGTFSFromZipBytes("GTFS.zip",zbytes, messages, errorChannel)
+	
+	assert.Len(t, gtfs.Agencies, 40)
+	assert.Len(t, gtfs.Attributions, 1)
+	assert.Len(t, gtfs.CalendarDates, 15666)
+	assert.Len(t, gtfs.Calendar, 1657)
+	assert.Len(t, gtfs.Frequencies, 0)
+	assert.Len(t, gtfs.Routes, 1650)
+	assert.Len(t, gtfs.Shapes, 4006014)
+	assert.Len(t, gtfs.StopTimes, 4085012)
+	assert.Len(t, gtfs.Stops, 38495)
+	assert.Len(t, gtfs.Transfers, 64344)
+	assert.Len(t, gtfs.Trips, 181373)
+}
+
+
+func getBytesFromZipFile() (zbytes []byte, err error) {
+	
 	gtfs, err := filepath.Abs("../../data/GTFS.zip")
 	if err != nil {
-		t.Error("filepath.Abs returned error: " + err.Error() + "\nPlease put a GTFS zip file into the data dir for test purpose")
+		return
 	}
 
 	file, err := os.Open(gtfs)
 	if err != nil {
-		t.Error("File open returned error: " + err.Error())
+		return
 	}
 	defer file.Close()
 
 	stat, err := file.Stat();
 	if err != nil {
-		t.Error("Error getting stat from file: " + err.Error())
+		return
 	}
 
-	bs := make([]byte, stat.Size())
-	_, err = bufio.NewReader(file).Read(bs)
+	zbytes = make([]byte, stat.Size())
+	_, err = bufio.NewReader(file).Read(zbytes)
 	if err != nil && err != io.EOF {
-		t.Error("Error reading bytes from file: " + err.Error())
+		return
 	}
 
-	gtfsDir, err := UnzipGTFSFromBytes(bs)
-	if err != nil {
-		t.Error("unzipGTFS failed with error: " +  err.Error())
-	}
-
-	for _, name := range expectedFileNames {
-		path := filepath.Join(gtfsDir, name)
-
-		assert.FileExists(t, path)
-	}
-
+	return
 }

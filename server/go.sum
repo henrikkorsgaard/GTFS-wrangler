@@ -1,9 +1,5 @@
 github.com/andybalholm/brotli v1.0.5 h1:8uQZIdzKmjc/iuPu7O2ioW48L81FgatrcpfFmiq/cCs=
 github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
-github.com/artonge/go-csv-tag/v2 v2.1.0 h1:2TJhYCOeFHPdXGe/7QIm7gfJ/7XyOL4LDr5ipMHnYpc=
-github.com/artonge/go-csv-tag/v2 v2.1.0/go.mod h1:MhLKePA0uu/+2jUJ4IER31uhRV/0GsIKyrSqSRR7Mkc=
-github.com/artonge/go-gtfs v1.3.2 h1:VSJJaNED8V4F1bImkoxyc/ADZBelNSqYaUt6DPY5gME=
-github.com/artonge/go-gtfs v1.3.2/go.mod h1:PDKd4/j/S8qo1xzNQdMB/0+xEhPfD2iy3R6eIZhklds=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
