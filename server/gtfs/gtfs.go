@@ -13,14 +13,21 @@ import (
 	"math"
 )
 
-// Do we need the filename of the original zip?
-// Just to be able to indicate to the user, that the 
-// full zip is processed?
+
+//Creates a new GTFS object based on a bytes from a zip file
+//Scenario is when a user uploads a GTFS.zip file via a HTML5 file field, they send the bytes to the server
+//We "open" the zip file in the byte stream, read the individual files and generate GTFS objects from these
+// Takes in a filename (for reference in the done message)
+// byte slice with the zip as bytes
+// message channel for progress feedback using the GTFSLoadProgress object
+// ErrorChannel chan for critical errors
+// Returns a populated GTFS object
 func NewGTFSFromZipBytes(filename string, zbytes []byte, messenges chan GTFSLoadProgress, errorChannel chan error) (gtfs GTFS) {
 
 	reader := bytes.NewReader(zbytes)
     zreader, err := zip.NewReader(reader, int64(len(zbytes)))
 	if err != nil {
+		errorChannel<-err
 		return
 	}
 	/*
@@ -36,9 +43,9 @@ func NewGTFSFromZipBytes(filename string, zbytes []byte, messenges chan GTFSLoad
 	var wg sync.WaitGroup
 
 	for _, file := range zreader.File {
-
 		freader, err := file.Open()
 		if err != nil {
+			fmt.Println("reader open error")
 			// we return error and end for now
 			// if there are non-consequential errors
 			// then we can filter these and skip the file
@@ -97,22 +104,26 @@ func NewGTFSFromZipBytes(filename string, zbytes []byte, messenges chan GTFSLoad
 		wg.Add(1)
 		go func(filename string) {
 			defer wg.Done()
-			loadGTFSFileFromByteReader(filename, freader,destination,messenges, errorChannel)
-			return
+			loadGTFSFileFromByteReader(filename,freader,destination,messenges,errorChannel)
 		}(file.Name)
 	}
-	
 	wg.Wait()
-	
 	messenges<-GTFSLoadProgress{FileName: filename, Message:"Done loading all GTFS files", Done: true}
+	
 	return gtfs
 }
 
+// Load the individual zip'ed files from a reader into a destination interface
+// takes a filename to report progress about
+// an io.Reader to read from
+// a destination interface{} to unmarshal into
+// message channel for progress messages
+// error channel for errors
 func loadGTFSFileFromByteReader(filename string, freader io.Reader, destination interface{}, messages chan GTFSLoadProgress, errorChannel chan error) {
 	r := csv.NewReader(freader) // this should be the entry for something else
 	data, err := r.ReadAll()
 	if err != nil {
-		errorChannel <- err
+		errorChannel <- fmt.Errorf("Error reading file '%s': " + err.Error(), filename)
 		return
 	}
 
@@ -127,15 +138,23 @@ func loadGTFSFileFromByteReader(filename string, freader io.Reader, destination 
 	unmarshalSlice(filename, header, rows, destination, messages, errorChannel)
 }
 
-
 // Modified from by https://github.com/artonge/go-csv-tag/blob/4b40f225e91a009021bac2ae6fd04a3d90c58b12/load.go#L142
+// Unmarshals the rows from the zipped GTFS (csv like) files.
+// takes filename for progress reporting
+// takes a csv header string slice
+// takes a row of string slices with the csv valuies
+// destination interface to unmarshal into
+// message channel to report progress
+// error channel for error reporting
 func unmarshalSlice(filename string, header []string, rows[][]string, destination interface{}, messages chan GTFSLoadProgress, errorChannel chan error) {
 	
+	// developer error
 	if destination == nil {
 		errorChannel<-fmt.Errorf("Error Unmarshalling: Destination slice is nil")
 		return
 	}
 
+	// developer error
 	if reflect.TypeOf(destination).Elem().Kind() != reflect.Slice { 
 		errorChannel<-fmt.Errorf("Error Unmarshalling: Destination is not a slice")
 		return
@@ -155,7 +174,7 @@ func unmarshalSlice(filename string, header []string, rows[][]string, destinatio
 	)
 
 	if ok := hasRequiredFields(headerIndex, refSlice.Index(0)); !ok {
-		errorChannel<-fmt.Errorf("Error loading '%s' from file: CSV Rows are missing required fields", filename)
+		errorChannel<-fmt.Errorf("Error: '%s' missing required field(s)", filename)
 		return
 	}
 
@@ -184,6 +203,7 @@ func unmarshalSlice(filename string, header []string, rows[][]string, destinatio
 
 			err := storeValue(row[position], refStruct.Field(j))
 			if err != nil {
+				fmt.Println("store value error")
 				errorChannel<-fmt.Errorf("line: %v to slice: %v:\n	==> %v", row, refStruct, err)
 				return
 			}
@@ -198,6 +218,8 @@ func unmarshalSlice(filename string, header []string, rows[][]string, destinatio
 
 // Store value
 // Ref: https://github.com/artonge/go-csv-tag/blob/4b40f225e91a009021bac2ae6fd04a3d90c58b12/load.go#L194
+// Way to store different values into the struct
+// for now we only focus on strings (they will be converted to json anyways)
 func storeValue(rawValue string, valRv reflect.Value) error {
 	rawValue = strings.TrimSpace(rawValue)
 	switch valRv.Kind() {

@@ -3,12 +3,7 @@
 
 ## TODO:
 ### Server:
-- Implement all the GTFS file loaders
--- Routes
--- Then stop_times for progres benchmark
--- TODO: handle types in unmarshal
-- Implement a chan solutionf for giving progress feedback to front end
-- Implement a gtfs specific error handling for better errors?
+
 ## Notes on ingesting GTFS csv to structs
 After a couple of experiments, I have decided not to use the [existing package](https://github.com/artonge/go-gtfs/tree/master) that can marshal into GTFS. First, it uses an underlying [csv](https://github.com/artonge/go-csv-tag/tree/master) that is significantly slower (factor 2 - 3) than writing the csv-to-gtfs conversion by hand. Second, I need some additional control over the tags (e.g. implementing require, optional and conditional optional checks). Third, I need to inject the 
 
