@@ -13,8 +13,8 @@ package gtfs
 */ 
 
 type GTFSLoadProgress struct {
-	FileName	string
-	Percent 	int 
+	Filename	string
+	Percent 	int
 	RowLength	int
 	Index		int
 	Message 	string

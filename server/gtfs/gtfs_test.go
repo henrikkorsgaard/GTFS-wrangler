@@ -24,7 +24,7 @@ func TestUnzipGTFSFromBytes(t *testing.T){
 		for {
 			select {
 				case msg := <-messages:
-					if msg.FileName == "GTFS.zip" && msg.Done {
+					if msg.Filename == "GTFS.zip" && msg.Done {
 						return
 					}
 			
@@ -63,7 +63,7 @@ func TestUnzipGTFSFromBytesTooManyColumns(t *testing.T){
 		for {
 			select {
 				case msg := <-messages:
-					if msg.FileName == "GTFS.zip" && msg.Done {
+					if msg.Filename == "GTFS.zip" && msg.Done {
 						return
 					}
 			
@@ -76,7 +76,6 @@ func TestUnzipGTFSFromBytesTooManyColumns(t *testing.T){
 	NewGTFSFromZipBytes("GTFS.zip",zbytes, messages, errorChannel)
 	assert.ErrorContains(t, err,"Error reading file 'agency.txt'")
 }
-
 
 func TestUnzipGTFSFromBytesMissingColumn(t *testing.T){
 	
@@ -91,7 +90,7 @@ func TestUnzipGTFSFromBytesMissingColumn(t *testing.T){
 		for {
 			select {
 				case msg := <-messages:
-					if msg.FileName == "GTFS.zip" && msg.Done {
+					if msg.Filename == "GTFS.zip" && msg.Done {
 						return
 					}
 			
@@ -118,7 +117,7 @@ func TestUnzipGTFSFromBytesWrongAgencyField(t *testing.T){
 		for {
 			select {
 				case msg := <-messages:
-					if msg.FileName == "GTFS.zip" && msg.Done {
+					if msg.Filename == "GTFS.zip" && msg.Done {
 						return
 					}
 			
@@ -146,7 +145,7 @@ func TestUnzipGTFSFromBytesMissingAgencyFile(t *testing.T){
 		for {
 			select {
 				case msg := <-messages:
-					if msg.FileName == "GTFS.zip" && msg.Done {
+					if msg.Filename == "GTFS.zip" && msg.Done {
 						return
 					}
 			

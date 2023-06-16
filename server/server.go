@@ -2,7 +2,6 @@ package main
  
 import (
   "fmt"
-  
   "github.com/gofiber/fiber/v2"
   "github.com/gofiber/fiber/v2/middleware/cors" // not sure we need this anymore.
   "github.com/gofiber/websocket/v2"
@@ -10,54 +9,121 @@ import (
   "henrikkorsgaard.dk/GTFS-wrangler/gtfs"
 
 )
+
+type WebsocketServerResponse struct {
+    Type string
+    Message string 
+    Payload interface{}
+}
+
 // Let's try out fiber
 // https://gofiber.io/
 
 
 func main() {
-
+    fmt.Println("running")
     app := fiber.New(fiber.Config{
       BodyLimit: 100 * 1024 * 1024,
     })
 
     app.Static("/public","./public")
 
-    //introduce new here
     app.Use(cors.New())
     app.Use("/ws", websocketUpgrader)
 
-    app.Get("/ws/gtfs", websocket.New(websocketGTFSHandler))
+    app.Get("/ws/gtfs", websocket.New(websocketGTFSUploadHandler))
     
     app.Get("/", mainPage) 
-    app.Post("/gtfs", fileUploadHandler)
-    app.Listen(":3000")
+    err := app.Listen(":3000")
+    if err != nil {
+      panic(err)
+    }
 }
 
 func mainPage(c *fiber.Ctx) error {
-  fmt.Println("what")
   return c.SendString("Hello, World!")
 }
 
 // need to look at error handling. That's gotta be a small thesis for me to grokk by now :)
-func websocketGTFSHandler(c *websocket.Conn) {
-  // we cannot seperate between the message with bits or a different message.
-  for {
-    _, message, err := c.ReadMessage()
+func websocketGTFSUploadHandler(c *websocket.Conn) {
+  var zbytes []byte 
+  
+  // TODO:
+  // We need to find out what happens when a file is corrupt/errors happen in parsing.
+  // Do we roll back everything
+  // Do we skip the file?
+
+  for {  
+    messageType, message, err := c.ReadMessage()
     if err != nil {
-      if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-        fmt.Println("read error:", err)
-      }
-      
+      if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
+        fmt.Println("Read error on websocket connection")
+        // we panic on this error to force us to identify all the bizarre error codes that might happen.
+        // eventually, we should log these somewhere
+        panic(err) 
+      } 
+      c.Close()
+      break
     }
-    
-    gtfsDir, err := gtfs.UnzipGTFSFromBytes(message)
-    
-    if err != nil {
-      fmt.Println(err)
+   
+    if messageType == websocket.BinaryMessage {
+      zbytes = message 
+
+      if err = c.WriteJSON(WebsocketServerResponse{Type:"request", Message:"filename"}); err != nil {
+				fmt.Println("write:", err)
+        c.Close()
+				break
+			}
     }
 
-    //Now I wonder if it makes sense to return a list of paths instead. Then we can check if there are any and then ignore emitting error from the unzipper!
-    fmt.Println(gtfsDir)
+    if messageType == websocket.TextMessage {
+      filename := string(message)
+      if len(zbytes) > 0 {
+        
+        messages := make(chan gtfs.GTFSLoadProgress)
+	      errorChannel := make(chan error)
+
+        go func(){
+          for {
+            select {
+              case msg := <-messages:
+                //progResponse, err := json.Marshal(msg)
+                wsResponse := WebsocketServerResponse{
+                  Type: "progress_info",
+                  Payload: msg,
+                }
+
+                if err = c.WriteJSON(wsResponse); err != nil { // needs to be a json btw.
+                  fmt.Println("write:", err)
+                  c.Close()
+                  break
+                }
+                
+                if msg.Filename == filename && msg.Done {
+                  return
+                }
+            
+              case err = <-errorChannel:
+                // handle errors and 
+                fmt.Println(err)
+                wsResponse := WebsocketServerResponse{
+                  Type: "data_error",
+                  Message: err.Error(),
+                }
+                if err = c.WriteJSON(wsResponse); err != nil { // needs to be a json btw.
+                  fmt.Println("write:", err)
+                }
+                // do we break on these? 
+                // it depends I guess
+                //c.Close()
+                break
+            }
+          }
+        }()
+
+        gtfs.NewGTFSFromZipBytes(filename,zbytes, messages, errorChannel)
+      }
+    }
   }
 }
 
@@ -66,19 +132,8 @@ func websocketUpgrader(c *fiber.Ctx) error {
     //From gofiber docs https://github.com/gofiber/websocket
 		if websocket.IsWebSocketUpgrade(c) {
 			c.Locals("allowed", true)
-      fmt.Println("Rat in the trap!")
 			return c.Next()
 		}
 		return fiber.ErrUpgradeRequired
-}
-
-func fileUploadHandler(c *fiber.Ctx) error {
-  fmt.Println("ever")
-  file, err := c.FormFile("file")
-  if err != nil {
-      panic(err)
-  }
-  fmt.Println(file) // ok, we got it. Back to making tests and implementation
-  return c.SendString("Hello, World!")
 }
 

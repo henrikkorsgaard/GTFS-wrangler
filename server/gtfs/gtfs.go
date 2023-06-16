@@ -108,7 +108,7 @@ func NewGTFSFromZipBytes(filename string, zbytes []byte, messenges chan GTFSLoad
 		}(file.Name)
 	}
 	wg.Wait()
-	messenges<-GTFSLoadProgress{FileName: filename, Message:"Done loading all GTFS files", Done: true}
+	messenges<-GTFSLoadProgress{Filename: filename, Message:"Done loading all GTFS files", Done: true}
 	
 	return gtfs
 }
