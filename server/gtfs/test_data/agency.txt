@@ -1,5 +1,0 @@
-"agency_id","agency_name","agency_url","agency_timezone","agency_lang","agency_phone"
-202,"Bornholms Trafik","https://bat.dk","Europe/Copenhagen","da",""
-203,"DSB","http://www.dsb.dk","Europe/Copenhagen","",""
-204,"FYNBUS","https://fynbus.dk","Europe/Copenhagen","",""
-206,"NT","https://www.nordjyllandstrafikselskab.dk","Europe/Copenhagen","",""

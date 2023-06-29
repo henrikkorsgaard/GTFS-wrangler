@@ -1,5 +1,0 @@
-"route_id","agency_id","route_short_name","route_long_name","route_type","route_color","route_text_color","route_desc"
-"19468_3",326,"866","",3,"","",""
-"25701_3",221,"897","",3,"","",""
-"25700_3",221,"885","",3,"","",""
-"25699_3",221,"884","",3,"","",""

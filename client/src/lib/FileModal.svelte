@@ -15,15 +15,16 @@
             let socket = new WebSocket("ws://localhost:3000/ws/gtfs")
             var formData = new FormData()
             formData.append("file", files[0])
-
+            let file = files[0];
             socket.onopen  = function(evt) {
                 console.log("websocket connection opened!")
-                let file = files[0];
+                
                 let reader = new FileReader();
-            
+                
                 reader.onload = function(evt){
                     let buffer = evt.target.result
-                    
+                    // it would have been nice if I could get a filename here. 
+                    // but I tried combining text/arraybuff stuff and I could not make it work.
                     socket.binaryType = "blob"
                     socket.send(buffer)
                 }
@@ -35,9 +36,28 @@
                 reader.readAsArrayBuffer(file);
             }
 
+            
+            //this will be the main feedback channel, so we need a way to handle multiple different requests
             socket.onmessage = function(evt){
-                console.log(evt)
-                //Do we want to close it after?
+                let msg = JSON.parse(evt.data)
+                if(msg.Type == "request" && msg.Message == "filename"){ // we need proper json -- this is chaos
+                    socket.send(file.name)
+                }
+
+                if(msg.Type == "progress_info") {
+                    if(msg.Payload.Filename == file.name && msg.Payload.Done) {
+                        console.log("closing socket as expected")
+                        //we remove the onclose function to avoid any error handling
+                        //on a deliberate close
+                        socket.onclose = null
+                        socket.close(1000)
+                    }
+                }
+                if(msg.Type == "data_error") {
+                    console.error(msg.Message)
+                    socket.onclose = null
+                    socket.close(1000)
+                }
             }
            
             socket.onerror = function(err){
@@ -45,26 +65,8 @@
             }
 
             socket.onclose = function(){
-                console.error("Websocket connections closeds")
+                console.error("Websocket connections closed unexpectedly")
             }
-
-
-            
-            /*
-            name: "GTFS.zip"
-​
-            size: 54812635
-​
-            type: "application/zip"
-            */
-            /*
-            const res = await fetch('http://localhost:3000/gtfs', {
-		    	method: 'POST',
-                headers: {},
-			    body:formData
-            })*/
-            
-            //console.log(res)
         }
     }   
 </script>

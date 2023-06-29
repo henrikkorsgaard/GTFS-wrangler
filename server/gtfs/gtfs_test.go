@@ -1,54 +1,187 @@
 package gtfs
 
 import (
+	"testing"
+	"github.com/stretchr/testify/assert"
+	"path/filepath"
+	"io"
 	"os"
 	"bufio"
-	"io"
-
-	"testing"
-	"path/filepath"
-	"github.com/stretchr/testify/assert"
 )
 
-//TODO: we need an error message there are no GTFS files in the provided zip.
 
-// We want to test unzipping given a []byte
+// Testing based on smaller GTFSDK.zip file. 
 func TestUnzipGTFSFromBytes(t *testing.T){
-
-	expectedFileNames := []string{"agency.txt", "attributions.txt", "calendar.txt","shapes.txt","trips.txt","routes.txt","stops.txt","stop_times.txt","transfers.txt"}
-
-	// we should move to use data in the test_data dir asap.
-	gtfs, err := filepath.Abs("../../data/GTFS.zip")
+	
+	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
 	if err != nil {
-		t.Error("filepath.Abs returned error: " + err.Error() + "\nPlease put a GTFS zip file into the data dir for test purpose")
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+	messages := make(chan GTFSLoadProgress)
+	errorChannel := make(chan error)
+	
+	go func(){
+		for {
+			select {
+				case msg := <-messages:
+					if msg.Filename == "GTFS.zip" && msg.Done {
+						return
+					}
+			
+				case err := <-errorChannel:
+					t.Error("Unexpected Error: " + err.Error())
+					return
+			}
+		}
+	}()
+
+	gtfs := NewGTFSFromZipBytes("GTFS.zip",zbytes, messages, errorChannel)
+	
+	assert.Len(t, gtfs.Agencies, 40)
+	assert.Len(t, gtfs.Attributions, 1)
+	assert.Len(t, gtfs.CalendarDates, 98)
+	assert.Len(t, gtfs.Calendar, 98)
+	assert.Len(t, gtfs.Frequencies, 0)
+	assert.Len(t, gtfs.Routes, 98)
+	assert.Len(t, gtfs.Shapes, 98)
+	assert.Len(t, gtfs.StopTimes, 98)
+	assert.Len(t, gtfs.Stops, 98)
+	assert.Len(t, gtfs.Transfers, 98)
+	assert.Len(t, gtfs.Trips, 98)
+}
+
+func TestUnzipGTFSFromBytesTooManyColumns(t *testing.T){
+	
+	zbytes, err := getBytesFromZipFile("test_data/GTFS_TOO_MANY_AGENCY_COLUMNS.zip")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	messages := make(chan GTFSLoadProgress)
+	errorChannel := make(chan error)
+	
+	go func(){
+		for {
+			select {
+				case msg := <-messages:
+					if msg.Filename == "GTFS.zip" && msg.Done {
+						return
+					}
+			
+				case err = <-errorChannel:
+					break
+			}
+		}
+	}()
+
+	NewGTFSFromZipBytes("GTFS.zip",zbytes, messages, errorChannel)
+	assert.ErrorContains(t, err,"Error reading file 'agency.txt'")
+}
+
+func TestUnzipGTFSFromBytesMissingColumn(t *testing.T){
+	
+	zbytes, err := getBytesFromZipFile("test_data/GTFS_MISSING_AGENCY_COLUMN.zip")
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+	messages := make(chan GTFSLoadProgress)
+	errorChannel := make(chan error)
+	
+	go func(){
+		for {
+			select {
+				case msg := <-messages:
+					if msg.Filename == "GTFS.zip" && msg.Done {
+						return
+					}
+			
+				case err = <-errorChannel:
+					break
+			}
+		}
+	}()
+
+	NewGTFSFromZipBytes("GTFS.zip",zbytes, messages, errorChannel)
+	assert.ErrorContains(t, err,"Error reading file 'agency.txt'")
+}
+
+func TestUnzipGTFSFromBytesWrongAgencyField(t *testing.T){
+	
+	zbytes, err := getBytesFromZipFile("test_data/GTFS_WRONG_AGENCY_FIELD.zip")
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+	messages := make(chan GTFSLoadProgress)
+	errorChannel := make(chan error)
+	
+	go func(){
+		for {
+			select {
+				case msg := <-messages:
+					if msg.Filename == "GTFS.zip" && msg.Done {
+						return
+					}
+			
+				case err = <-errorChannel:
+					break
+			}
+		}
+	}()
+
+	NewGTFSFromZipBytes("GTFS.zip",zbytes, messages, errorChannel)
+	assert.ErrorContains(t, err,"Error: 'agency.txt' missing required field(s)")
+}
+
+// I need to figure out how to test this and if we need to implement a file check
+func TestUnzipGTFSFromBytesMissingAgencyFile(t *testing.T){
+	
+	zbytes, err := getBytesFromZipFile("test_data/GTFS_MISSING_AGENCY_FILE.zip")
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+	messages := make(chan GTFSLoadProgress)
+	errorChannel := make(chan error)
+
+	go func(){
+		for {
+			select {
+				case msg := <-messages:
+					if msg.Filename == "GTFS.zip" && msg.Done {
+						return
+					}
+			
+				case err = <-errorChannel:
+					break
+			}
+		}
+	}()
+
+	NewGTFSFromZipBytes("GTFS.zip",zbytes, messages, errorChannel)
+	assert.ErrorContains(t, err,"Missing 'agency.txt' file")
+}
+
+func getBytesFromZipFile(path string) (zbytes []byte, err error) {
+	
+	gtfs, err := filepath.Abs(path)
+	if err != nil {
+		return
 	}
 
 	file, err := os.Open(gtfs)
 	if err != nil {
-		t.Error("File open returned error: " + err.Error())
+		return
 	}
 	defer file.Close()
 
 	stat, err := file.Stat();
 	if err != nil {
-		t.Error("Error getting stat from file: " + err.Error())
+		return
 	}
 
-	bs := make([]byte, stat.Size())
-	_, err = bufio.NewReader(file).Read(bs)
+	zbytes = make([]byte, stat.Size())
+	_, err = bufio.NewReader(file).Read(zbytes)
 	if err != nil && err != io.EOF {
-		t.Error("Error reading bytes from file: " + err.Error())
+		return
 	}
 
-	gtfsDir, err := UnzipGTFSFromBytes(bs)
-	if err != nil {
-		t.Error("unzipGTFS failed with error: " +  err.Error())
-	}
-
-	for _, name := range expectedFileNames {
-		path := filepath.Join(gtfsDir, name)
-
-		assert.FileExists(t, path)
-	}
-
+	return
 }
