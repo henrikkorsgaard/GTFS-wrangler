@@ -14,6 +14,13 @@ import (
 // https://gofiber.io/
 
 
+// We do not need the server to be able to parse GTFS from the front-end
+// It will do so from the backend
+// https://www.rejseplanen.info/labs/GTFS.zip
+// -> if they move this, then we need to react.
+// -> we still need to be able to gulp these files
+// -> we still need to be able to check if this is a new download
+
 func main() {
 
     app := fiber.New(fiber.Config{
