@@ -14,6 +14,9 @@ import (
 // https://gofiber.io/
 
 
+// We also need to understand this:https://go.dev/blog/context
+// https://pkg.go.dev/context
+
 // We do not need the server to be able to parse GTFS from the front-end
 // It will do so from the backend
 // https://www.rejseplanen.info/labs/GTFS.zip
