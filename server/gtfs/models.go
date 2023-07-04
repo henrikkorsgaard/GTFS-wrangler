@@ -175,8 +175,10 @@ type FareRule struct {
 }
 
 // Spec: https://developers.google.com/transit/gtfs/reference#shapestxt
+
 type Shape struct {
 	ID					string `csv:"shape_id" required:"true"`
+	//it has a list of points...
 	Lat					string `csv:"shape_pt_lat" required:"true"`
 	Lon					string `csv:"shape_pt_lon" required:"true"`
 	Sequence			string `csv:"shape_pt_sequence" required:"true"`

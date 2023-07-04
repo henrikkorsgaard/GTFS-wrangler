@@ -82,7 +82,7 @@ func NewGTFSFromZipBytes(filename string, zbytes []byte, messenges chan GTFSLoad
 			case "fare_rules.txt":
 				destination = &gtfs.FareRules
 			case "shapes.txt":
-				destination = &gtfs.Shapes
+				destination = &gtfs.Shapes //this contains an isssue in terms of combining terms
 			case "frequencies.txt":
 				destination = &gtfs.Frequencies
 			case "transfers.txt":
