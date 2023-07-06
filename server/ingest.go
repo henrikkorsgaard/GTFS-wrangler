@@ -8,6 +8,8 @@ import (
 func main(){
 	fmt.Println("fmt parking")
 
+
+	// This needs to come in from somewhere
 	gtfs.DownloadGTFS("https://www.rejseplanen.info/labs/GTFS.zip")
 	// we need to parse the GTFS file 
 	// then we need to ingest everything. Yeez, I can kill all the process things as well
