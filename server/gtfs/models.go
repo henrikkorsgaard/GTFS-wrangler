@@ -156,7 +156,7 @@ type CalendarDate struct {
 
 // Spec: https://developers.google.com/transit/gtfs/reference#fare_attributestxt
 type FareAttribute struct {
-	FareID					string `csv:"fare_id" required:"true"`
+	FareID				string `csv:"fare_id" required:"true"`
 	Price				string `csv:"price" required:"true"`
 	Currency 			string `csv:"currency_type" required:"true"`
 	PaymentMethod		string `csv:"payment_method" requied:"true"`
