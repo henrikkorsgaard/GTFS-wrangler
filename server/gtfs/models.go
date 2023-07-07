@@ -12,6 +12,10 @@ package gtfs
  simplify the calls throughout
 */ 
 
+import (
+	"google.golang.org/genproto/googleapis/type/latlng"
+)
+
 type GTFSLoadProgress struct {
 	Filename	string
 	Percent 	int
@@ -71,8 +75,8 @@ type Stop struct {
 	Code	 			string `csv:"stop_code" required:"false"`
 	Name				string `csv:"stop_name" required:"true"`
 	Description			string `csv:"stop_desc" required:"false"`
-	Lat					string `csv:"stop_lat" required:"true"`
-	Lon    				string `csv:"stop_lon" required:"true"`
+	Lat					float64 `csv:"stop_lat" required:"true"`
+	Lon    				float64 `csv:"stop_lon" required:"true"`
 	ZoneId				string `csv:"zone_id" required:"false"`   // only required if having fare_rules.txt in the dataset. We need some way of validating that.
 	URL 				string `csv:"stop_url" required:"false"`
 	LocationType 		string `csv:"location_type" required:"false"`
@@ -178,10 +182,10 @@ type FareRule struct {
 
 type Shape struct {
 	ID					string `csv:"shape_id" required:"true"`
-	//it has a list of points...
-	Lat					string `csv:"shape_pt_lat" required:"true"`
-	Lon					string `csv:"shape_pt_lon" required:"true"`
+	Lat					float64 `csv:"shape_pt_lat" required:"true"`
+	Lon					float64 `csv:"shape_pt_lon" required:"true"`
 	Sequence			string `csv:"shape_pt_sequence" required:"true"`
+	Coordinates			[]latlng.LatLng // we like this instead of the sequenct because the datatype for sequence is given
 	DistanceTraveled	string `csv:"shape_dist_traveled" required:"false"`
 }
 

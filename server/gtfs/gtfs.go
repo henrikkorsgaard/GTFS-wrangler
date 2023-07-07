@@ -8,9 +8,9 @@ import (
 	"encoding/csv"
 	"strings"
 	"reflect"
-	"math"
 	"time"
 	"net/http"
+	"google.golang.org/genproto/googleapis/type/latlng"
 )
 
 type GTFSCSVFile struct {
@@ -88,6 +88,64 @@ func ParseGTFSZipIntoGTFSFiles (zbytes []byte) (files []GTFSCSVFile, err error){
 	return 
 }
 
+func UnmarshallAgencies(header []string, rows[][]string) (agencies []Agency, err error) {
+	err = unmarshalSlice(header, rows, &agencies)
+	return  
+}
+
+func UnmarshallAttributions(header []string, rows[][]string) (attributions []Attribution, err error) {
+	err = unmarshalSlice(header, rows, &attributions)
+	return  
+}
+
+func UnmarshallCalendar(header []string, rows[][]string) (calendar []Calendar, err error) {
+	err = unmarshalSlice(header, rows, &calendar)
+	return  
+}
+
+func UnmarshallCalendarDate(header []string, rows[][]string) (calendarDate []CalendarDate, err error) {
+	err = unmarshalSlice(header, rows, &calendarDate)
+	return  
+}
+
+func UnmarshallFrequency(header []string, rows[][]string) (frequencies []Frequency, err error) {
+	err = unmarshalSlice(header, rows, &frequencies)
+	return  
+}
+
+func UnmarshallRoutes(header []string, rows[][]string) (routes []Route, err error) {
+	err = unmarshalSlice(header, rows, &routes)
+	return  
+}
+
+func UnmarshallShapes(header []string, rows[][]string) (shapes []Shape, err error) {
+	err = unmarshalSlice(header, rows, &shapes)
+	// two cases:
+
+	// The points are in the sequence
+
+	// Or we have many that needs to be combined into few.
+	shapeMap := make(map[string]Shape)
+	for _, s := range shapes {
+		ll := latlng.LatLng{Latitude:s.Lat,Longitude:s.Lon}
+		if shp, ok := shapeMap[s.ID]; ok {
+			shp.Coordinates = append(shp.Coordinates, ll)
+			shapeMap[s.ID] = shp
+		} else {
+			s.Coordinates = append(s.Coordinates, ll)
+			shapeMap[s.ID] = s
+		}
+	}
+	
+	shapes = make([]Shape, 0, len(shapeMap))
+
+	for _, s := range shapeMap {
+		fmt.Println(len(s.Coordinates))
+		shapes = append(shapes, s)
+	}
+	
+	return
+}
 
 // Modified from by https://github.com/artonge/go-csv-tag/blob/4b40f225e91a009021bac2ae6fd04a3d90c58b12/load.go#L142
 // Unmarshals the rows from the zipped GTFS (csv like) files.
@@ -97,14 +155,17 @@ func ParseGTFSZipIntoGTFSFiles (zbytes []byte) (files []GTFSCSVFile, err error){
 // destination interface to unmarshal into
 // message channel to report progress
 // error channel for error reporting
-func UnmarshalSlice(filename string, header []string, rows[][]string, destination interface{}) (err error){
+func unmarshalSlice(header []string, rows[][]string, destination interface{}) (err error){
 	
+	if len(rows) == 0 {
+		return
+	}
+
 	// developer error
 	if destination == nil {
 		err = fmt.Errorf("Error Unmarshalling: Destination slice is nil")
 		return
 	}
-
 	// developer error
 	if reflect.TypeOf(destination).Elem().Kind() != reflect.Slice { 
 		err = fmt.Errorf("Error Unmarshalling: Destination is not a slice")
@@ -117,6 +178,7 @@ func UnmarshalSlice(filename string, header []string, rows[][]string, destinatio
 		headerIndex[strings.TrimSpace(name)] = i
 	}
 
+
 	// Create the slice to put the values in.
 	refSlice := reflect.MakeSlice(
 		reflect.ValueOf(destination).Elem().Type(),
@@ -125,19 +187,12 @@ func UnmarshalSlice(filename string, header []string, rows[][]string, destinatio
 	)
 
 	if ok := hasRequiredFields(headerIndex, refSlice.Index(0)); !ok {
-		err = fmt.Errorf("Error: '%s' missing required field(s)", filename)
+		err = fmt.Errorf("Error: file missing required field(s)")
 		return
 	}
 
-	percent := 0.00
-
 	for i, row := range rows {
 		refStruct := refSlice.Index(i)
-
-		status := math.Floor(float64(i) / float64(len(rows)) * 100.00)
-		if status > percent+1 { //we just want a few less status messages
-			percent = status
-		}
 		
 		n := refStruct.NumField()
 		for j := 0; j < n ; j++ {
@@ -151,18 +206,19 @@ func UnmarshalSlice(filename string, header []string, rows[][]string, destinatio
 				continue
 			}
 
-			err := storeValue(row[position], refStruct.Field(j))
+			err = storeValue(row[position], refStruct.Field(j))
 			if err != nil {
 				err = fmt.Errorf("line: %v to slice: %v:\n	==> %v", row, refStruct, err)
 				break
 			}
 		}
-		
+
 		if err != nil {
 			break
 		}
 	}
 
 	reflect.ValueOf(destination).Elem().Set(refSlice)
+
 	return 
 }

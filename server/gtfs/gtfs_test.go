@@ -52,12 +52,15 @@ func TestMarshalGTFSAgency(t *testing.T){
 
 	gtfsFiles, err := ParseGTFSZipIntoGTFSFiles(zbytes)
 	if err != nil {
-		t.Error("Error ParseGTFSZipIntoGTFSFiles!")
+		t.Error("Error TestMarshalGTFSAgency!")
 	}
 
-	agency := gtfsFiles[0]
-	agencies := []Agency{}
-	UnmarshalSlice(agency.Name, agency.Header, agency.Records, &agencies)
+	data := gtfsFiles[0]
+	agencies, err := UnmarshallAgencies(data.Header, data.Records)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSAgency: " + err.Error())
+	}
+
 	assert.Len(t, agencies, 40)
 }
 
@@ -70,13 +73,117 @@ func TestMarshalGTFSAttribution(t *testing.T){
 
 	gtfsFiles, err := ParseGTFSZipIntoGTFSFiles(zbytes)
 	if err != nil {
-		t.Error("Error ParseGTFSZipIntoGTFSFiles!")
+		t.Error("Error TestMarshalGTFSAttribution!")
 	}
 
-	attribution := gtfsFiles[1]
-	attributions := []Attribution{}
-	UnmarshalSlice(attribution.Name, attribution.Header, attribution.Records, &attributions)
+	data := gtfsFiles[1]
+	attributions, err := UnmarshallAttributions(data.Header, data.Records)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSAttribution: " + err.Error())
+	}
 	assert.Len(t, attributions, 1)
+}
+
+
+func TestMarshalGTFSCalendar(t *testing.T){
+	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+
+	gtfsFiles, err := ParseGTFSZipIntoGTFSFiles(zbytes)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSCalendar!")
+	}
+
+	data := gtfsFiles[2]
+	calendar, err := UnmarshallCalendar(data.Header, data.Records)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSCalendar: " + err.Error())
+	}
+	assert.Len(t, calendar, 98)
+}
+
+
+func TestMarshalGTFSCalendarDate(t *testing.T){
+	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+
+	gtfsFiles, err := ParseGTFSZipIntoGTFSFiles(zbytes)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSCalendarDates!")
+	}
+
+	data := gtfsFiles[3]
+	calendar, err := UnmarshallCalendarDate(data.Header, data.Records)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSCalendarDates: " + err.Error())
+	}
+	assert.Len(t, calendar, 98)
+}
+
+
+func TestMarshalGTFSFrequency(t *testing.T){
+	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+
+	gtfsFiles, err := ParseGTFSZipIntoGTFSFiles(zbytes)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSFrequency!")
+	}
+
+	data := gtfsFiles[4]
+	frequency , err := UnmarshallFrequency(data.Header, data.Records)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSFrequency: " + err.Error())
+	}
+	assert.Len(t, frequency, 0)
+}
+
+
+func TestMarshalGTFSRoute(t *testing.T){
+	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+
+	gtfsFiles, err := ParseGTFSZipIntoGTFSFiles(zbytes)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSRoute!")
+	}
+
+	data := gtfsFiles[5]
+	routes, err := UnmarshallRoutes(data.Header, data.Records)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSRoute: " + err.Error())
+	}
+	assert.Len(t, routes, 98)
+}
+
+
+
+func TestMarshalGTFSShape(t *testing.T){
+	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+
+	gtfsFiles, err := ParseGTFSZipIntoGTFSFiles(zbytes)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSShape!")
+	}
+
+	data := gtfsFiles[6]
+	shapes, err := UnmarshallShapes(data.Header, data.Records)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSShape: " + err.Error())
+	}
+	
+	assert.Len(t, shapes, 4)
 }
 
 /*
