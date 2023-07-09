@@ -23,7 +23,6 @@ func TestParseGTFSZipIntoGTFSFiles(t *testing.T){
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
 
-
 	gtfsFiles, err := ParseGTFSZipIntoGTFSFiles(zbytes)
 	if err != nil {
 		t.Error("Error ParseGTFSZipIntoGTFSFiles!")
@@ -164,8 +163,6 @@ func TestMarshalGTFSRoute(t *testing.T){
 	assert.Len(t, routes, 98)
 }
 
-
-
 func TestMarshalGTFSShape(t *testing.T){
 	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
 	if err != nil {
@@ -185,6 +182,87 @@ func TestMarshalGTFSShape(t *testing.T){
 	
 	assert.Len(t, shapes, 4)
 }
+
+func TestMarshalGTFSStops(t *testing.T){
+	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+
+	gtfsFiles, err := ParseGTFSZipIntoGTFSFiles(zbytes)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSStops!")
+	}
+
+	data := gtfsFiles[7]
+	stops, err := UnmarshallStops(data.Header, data.Records)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSStops: " + err.Error())
+	}
+	
+	assert.Len(t, stops, 98)
+}
+
+func TestMarshalGTFSStopTimes(t *testing.T){
+	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+
+	gtfsFiles, err := ParseGTFSZipIntoGTFSFiles(zbytes)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSStopTimes!")
+	}
+
+	data := gtfsFiles[8]
+	stopTimes, err := UnmarshallStopTimes(data.Header, data.Records)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSStopTimes: " + err.Error())
+	}
+	
+	assert.Len(t, stopTimes, 98)
+}
+
+func TestMarshalGTFSTransfers(t *testing.T){
+	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+
+	gtfsFiles, err := ParseGTFSZipIntoGTFSFiles(zbytes)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSTransfers!")
+	}
+
+	data := gtfsFiles[9]
+	transfers, err := UnmarshallTransfers(data.Header, data.Records)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSTransfers: " + err.Error())
+	}
+	
+	assert.Len(t, transfers, 98)
+}
+
+func TestMarshalGTFSTrips(t *testing.T){
+	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+
+	gtfsFiles, err := ParseGTFSZipIntoGTFSFiles(zbytes)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSTrips!")
+	}
+
+	data := gtfsFiles[10]
+	trips, err := UnmarshallTrips(data.Header, data.Records)
+	if err != nil {
+		t.Error("Error TestMarshalGTFSTrips: " + err.Error())
+	}
+	
+	assert.Len(t, trips, 98)
+}
+
 
 /*
 // Testing based on smaller GTFSDK.zip file. 

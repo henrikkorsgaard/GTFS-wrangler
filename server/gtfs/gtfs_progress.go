@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"strconv"
 	"math"
+	"google.golang.org/genproto/googleapis/type/latlng"
 )
 
 
@@ -109,7 +110,6 @@ func NewGTFSFromZipBytesWithProgress(filename string, zbytes []byte, messenges c
 	}
 	wg.Wait()
 	messenges<-GTFSLoadProgress{Filename: filename, Message:"Done loading all GTFS files", Done: true}
-	
 	return gtfs
 }
 
@@ -210,9 +210,48 @@ func unmarshalSliceWithProgress(filename string, header []string, rows[][]string
 		}
 	}
 
+	// gtfs.Shapre represents a special case.
+	// The shapes come with multiple rows per unique shape (ID)
+	// Each row represent an additional LatLon coordinate
+	// We need to reduce this to unique shapes with a slice of the coordinates (similar to GeoJSon LineString)
+	if reflect.TypeOf(destination) == reflect.TypeOf(&[]Shape{}) {
+		// Create a shape map for the unique IDs
+		shapeMap := make(map[string]reflect.Value)
+		for i := 0; i < refSlice.Len(); i++ {
+			rf := refSlice.Index(i)
+	
+			idValue := rf.FieldByName("ID").String()
+			latValue := rf.FieldByName("Lat").Float()
+			lonValue := rf.FieldByName("Lat").Float()
+			ll := latlng.LatLng{Latitude:latValue,Longitude:lonValue}
+			
+			if shprf, ok := shapeMap[idValue]; ok {
+				//If already in shapeMap, then this is the reference.
+				rf = shprf
+			} 
+
+			coords := rf.FieldByName("Coordinates").Slice(0,rf.FieldByName("Coordinates").Len())
+			coords = reflect.Append(coords, reflect.ValueOf(ll))
+			rf.FieldByName("Coordinates").Set(coords)
+			shapeMap[idValue] = rf
+		}
+
+		// Override the refSlice to take the reduced number of Shapres
+		refSlice = reflect.MakeSlice(
+		reflect.ValueOf(destination).Elem().Type(),
+			0,
+			len(shapeMap),
+		)
+
+		for _, rf := range shapeMap {
+			refSlice = reflect.Append(refSlice, rf)
+		}
+	} 
+	
+	reflect.ValueOf(destination).Elem().Set(refSlice)
+	
 	messages <- GTFSLoadProgress{filename,100, len(rows),len(rows),"completed loading",true}
 
-	reflect.ValueOf(destination).Elem().Set(refSlice)
 	return 
 }
 

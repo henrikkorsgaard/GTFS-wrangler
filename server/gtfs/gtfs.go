@@ -19,7 +19,6 @@ type GTFSCSVFile struct {
 	Name string
 }
 
-
 func DownloadGTFS(url string) (bytes []byte, err error){
 	
 	n := time.Now()
@@ -120,11 +119,7 @@ func UnmarshallRoutes(header []string, rows[][]string) (routes []Route, err erro
 
 func UnmarshallShapes(header []string, rows[][]string) (shapes []Shape, err error) {
 	err = unmarshalSlice(header, rows, &shapes)
-	// two cases:
-
-	// The points are in the sequence
-
-	// Or we have many that needs to be combined into few.
+	
 	shapeMap := make(map[string]Shape)
 	for _, s := range shapes {
 		ll := latlng.LatLng{Latitude:s.Lat,Longitude:s.Lon}
@@ -140,11 +135,30 @@ func UnmarshallShapes(header []string, rows[][]string) (shapes []Shape, err erro
 	shapes = make([]Shape, 0, len(shapeMap))
 
 	for _, s := range shapeMap {
-		fmt.Println(len(s.Coordinates))
 		shapes = append(shapes, s)
 	}
 	
 	return
+}
+
+func UnmarshallStops(header []string, rows[][]string) (stops []Stop, err error) {
+	err = unmarshalSlice(header, rows, &stops)
+	return  
+}
+
+func UnmarshallStopTimes(header []string, rows[][]string) (stopTimes []StopTime, err error) {
+	err = unmarshalSlice(header, rows, &stopTimes)
+	return  
+}
+
+func UnmarshallTransfers(header []string, rows[][]string) (transfers []Transfer, err error) {
+	err = unmarshalSlice(header, rows, &transfers)
+	return  
+}
+
+func UnmarshallTrips(header []string, rows[][]string) (trips []Trip, err error) {
+	err = unmarshalSlice(header, rows, &trips)
+	return  
 }
 
 // Modified from by https://github.com/artonge/go-csv-tag/blob/4b40f225e91a009021bac2ae6fd04a3d90c58b12/load.go#L142
