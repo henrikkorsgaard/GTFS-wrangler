@@ -143,9 +143,6 @@ func UnmarshallShapes(header []string, rows[][]string) (shapes []Shape, err erro
 
 func UnmarshallStops(header []string, rows[][]string) (stops []Stop, err error) {
 	err = unmarshalSlice(header, rows, &stops)
-	for _, s := range stops {
-		s.GeoPoint = latlng.LatLng{Latitude: s.Lat, Longitude: s.Lon}
-	}
 	return  
 }
 

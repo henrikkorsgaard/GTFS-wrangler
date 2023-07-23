@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"strings"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5"
 )
@@ -49,7 +50,7 @@ func (repo *repository) Close(){
 
 func (repo *repository) IngestStops(stops []Stop) (err error){
 
-	query := `INSERT INTO stops (id, name, description, point) VALUES (@id, @name, @description, @point) ON CONFLICT (id) DO NOTHING`
+	query := `INSERT INTO stops (id, name, description, point, parentstation) VALUES (@id, @name, @description, @point, @parentstation) ON CONFLICT (id) DO NOTHING`
 
 	batch := &pgx.Batch{}
 
@@ -61,6 +62,7 @@ func (repo *repository) IngestStops(stops []Stop) (err error){
 			"name": s.Name,
 			"description":s.Description,
 			"point": p,
+			"parentstation": s.ParentStation,
 		}
 
 		batch.Queue(query, args)
@@ -85,6 +87,125 @@ func (repo *repository) IngestStops(stops []Stop) (err error){
 	return results.Close()
 	
 }
+
+func (repo *repository) IngestRoutes(routes []Route) (err error){
+
+	query := `INSERT INTO routes (id, agencyid, name, longname, type) VALUES (@id, @agencyid, @name, @longname, @type) ON CONFLICT (id) DO NOTHING`
+
+	batch := &pgx.Batch{}
+
+	for _, r := range routes {
+		
+		args := pgx.NamedArgs{
+			"id": r.ID,
+			"agencyid": r.AgencyID,
+			"name":r.Name,
+			"longname": r.LongName,
+			"type": r.Type,
+		}
+
+		batch.Queue(query, args)
+	}
+
+	results := repo.pool.SendBatch(context.Background(), batch)
+
+	defer results.Close()
+	
+	// this is a bit weird, but the exec fetches the result for each query in the queue. We want to do this len(stops) times to make sure no errors happen. 
+	for _,_ = range routes {
+		_, err = results.Exec()
+		if err != nil {
+			break 
+		}
+	}
+
+	if err != nil {
+		return
+	}
+
+	return results.Close()
+	
+}
+
+func (repo *repository) IngestTrips(trips []Trip) (err error){
+	query := `INSERT INTO trips (id, serviceid, routeid,shapeid, tripheadsign) VALUES (@id, @serviceid, @routeid,@shapeid,@tripheadsign) ON CONFLICT (id) DO NOTHING`
+
+	batch := &pgx.Batch{}
+
+	for _, t := range trips {
+		args := pgx.NamedArgs{
+			"id": t.ID,
+			"serviceid": t.ServiceID,
+			"routeid":t.RouteID,
+			"shapeid": t.ShapeID,
+			"tripheadsign": t.TripHeadsign,
+		}
+
+		batch.Queue(query, args)
+	}
+
+	results := repo.pool.SendBatch(context.Background(), batch)
+
+	defer results.Close()
+	
+	// this is a bit weird, but the exec fetches the result for each query in the queue. We want to do this len(stops) times to make sure no errors happen. 
+	for _,_ = range trips {
+		_, err = results.Exec()
+		if err != nil {
+			break 
+		}
+	}
+
+	if err != nil {
+		return
+	}
+
+	return results.Close()
+}
+
+func (repo *repository) IngestShapes(shapes []Shape) (err error){
+	
+	query := `INSERT INTO shapes (id, line) VALUES (@id, @line) ON CONFLICT (id) DO NOTHING`
+	
+	batch := &pgx.Batch{}
+
+	for _, s := range shapes {
+
+		coordStrings := make([]string, 0)
+		for _, ll := range s.Coordinates {
+			llstr := fmt.Sprintf("%f %f", ll.Longitude, ll.Latitude)
+			coordStrings = append(coordStrings, llstr)
+		}
+	
+		line := fmt.Sprintf("LINESTRING(%s)", strings.Join(coordStrings[0:], ","))
+
+		args := pgx.NamedArgs{
+			"id": s.ID,
+			"line": line,
+		}
+
+		batch.Queue(query, args)
+	}
+
+	results := repo.pool.SendBatch(context.Background(), batch)
+
+	defer results.Close()
+	
+	// this is a bit weird, but the exec fetches the result for each query in the queue. We want to do this len(stops) times to make sure no errors happen. 
+	for _,_ = range shapes {
+		_, err = results.Exec()
+		if err != nil {
+			break 
+		}
+	}
+
+	if err != nil {
+		return
+	}
+
+	return results.Close()
+}
+
 
 
 

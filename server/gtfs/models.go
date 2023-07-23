@@ -71,7 +71,6 @@ type Stop struct {
 	Code	 			string `csv:"stop_code" required:"false"`
 	Name				string `csv:"stop_name" required:"true"`
 	Description			string `csv:"stop_desc" required:"false"`
-	GeoPoint			latlng.LatLng
 	Lat					float64 `csv:"stop_lat" required:"true"`
 	Lon    				float64 `csv:"stop_lon" required:"true"`
 	ZoneId				string `csv:"zone_id" required:"false"`   // only required if having fare_rules.txt in the dataset. We need some way of validating that.
@@ -104,7 +103,7 @@ type Route struct {
 type Trip struct {
 	RouteID					string `csv:"route_id" required:"true"`
 	ServiceID				string `csv:"service_id" required:"true"`
-	TripID					string `csv:"trip_id" required:"true"`
+	ID						string `csv:"trip_id" required:"true"`
 	TripHeadsign			string `csv:"trip_headsign" required:"false"`
 	Name					string `csv:"trip_short_name" required:"false"`
 	DirectionID 			string `csv:"direction_id" required:"false"`
@@ -179,6 +178,7 @@ type FareRule struct {
 
 type Shape struct {
 	ID					string `csv:"shape_id" required:"true"`
+	// this is weird that it is required
 	Lat					float64 `csv:"shape_pt_lat" required:"true"`
 	Lon					float64 `csv:"shape_pt_lon" required:"true"`
 	Sequence			string `csv:"shape_pt_sequence" required:"true"`
