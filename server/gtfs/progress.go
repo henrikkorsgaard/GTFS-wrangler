@@ -23,7 +23,7 @@ import (
 // message channel for progress feedback using the GTFSLoadProgress object
 // ErrorChannel chan for critical errors
 // Returns a populated GTFS object
-func NewGTFSFromZipBytesWithProgress(filename string, zbytes []byte, messenges chan GTFSLoadProgress, errorChannel chan error) (gtfs GTFS) {
+func NewFromZipBytesWithProgress(filename string, zbytes []byte, messenges chan LoadProgress, errorChannel chan error) (gtfs GTFS) {
 
 	reader := bytes.NewReader(zbytes)
     zreader, err := zip.NewReader(reader, int64(len(zbytes)))
@@ -105,11 +105,11 @@ func NewGTFSFromZipBytesWithProgress(filename string, zbytes []byte, messenges c
 		wg.Add(1)
 		go func(filename string) {
 			defer wg.Done()
-			loadGTFSFileFromByteReaderWithProgress(filename,freader,destination,messenges,errorChannel)
+			loadFileFromByteReaderWithProgress(filename,freader,destination,messenges,errorChannel)
 		}(file.Name)
 	}
 	wg.Wait()
-	messenges<-GTFSLoadProgress{Filename: filename, Message:"Done loading all GTFS files", Done: true}
+	messenges<-LoadProgress{Filename: filename, Message:"Done loading all GTFS files", Done: true}
 	return gtfs
 }
 
@@ -119,7 +119,7 @@ func NewGTFSFromZipBytesWithProgress(filename string, zbytes []byte, messenges c
 // a destination interface{} to unmarshal into
 // message channel for progress messages
 // error channel for errors
-func loadGTFSFileFromByteReaderWithProgress(filename string, freader io.Reader, destination interface{}, messages chan GTFSLoadProgress, errorChannel chan error) {
+func loadFileFromByteReaderWithProgress(filename string, freader io.Reader, destination interface{}, messages chan LoadProgress, errorChannel chan error) {
 	r := csv.NewReader(freader) // this should be the entry for something else
 	data, err := r.ReadAll()
 	if err != nil {
@@ -128,7 +128,7 @@ func loadGTFSFileFromByteReaderWithProgress(filename string, freader io.Reader, 
 	}
 
 	if len(data) < 2 {
-		messages <- GTFSLoadProgress{filename,100,1,1,"file only contained header",true}
+		messages <- LoadProgress{filename,100,1,1,"file only contained header",true}
 		return
 	}
 
@@ -146,7 +146,7 @@ func loadGTFSFileFromByteReaderWithProgress(filename string, freader io.Reader, 
 // destination interface to unmarshal into
 // message channel to report progress
 // error channel for error reporting
-func unmarshalSliceWithProgress(filename string, header []string, rows[][]string, destination interface{}, messages chan GTFSLoadProgress, errorChannel chan error) {
+func unmarshalSliceWithProgress(filename string, header []string, rows[][]string, destination interface{}, messages chan LoadProgress, errorChannel chan error) {
 	
 	// developer error
 	if destination == nil {
@@ -186,7 +186,7 @@ func unmarshalSliceWithProgress(filename string, header []string, rows[][]string
 		status := math.Floor(float64(i) / float64(len(rows)) * 100.00)
 		if status > percent+1 { //we just want a few less status messages
 			percent = status
-			messages <- GTFSLoadProgress{filename,int(percent), len(rows),i,"loading",false}
+			messages <- LoadProgress{filename,int(percent), len(rows),i,"loading",false}
 		}
 		
 		n := refStruct.NumField()
@@ -250,7 +250,7 @@ func unmarshalSliceWithProgress(filename string, header []string, rows[][]string
 	
 	reflect.ValueOf(destination).Elem().Set(refSlice)
 	
-	messages <- GTFSLoadProgress{filename,100, len(rows),len(rows),"completed loading",true}
+	messages <- LoadProgress{filename,100, len(rows),len(rows),"completed loading",true}
 
 	return 
 }

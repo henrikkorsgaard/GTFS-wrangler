@@ -2,3 +2,4 @@ data/
 temp/
 .DS_Store
 .vscode
+database.env

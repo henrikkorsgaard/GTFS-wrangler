@@ -13,13 +13,13 @@ import (
 	"google.golang.org/genproto/googleapis/type/latlng"
 )
 
-type GTFSCSVFile struct {
+type CSVFile struct {
 	Header []string
 	Records [][]string
 	Name string
 }
 
-func DownloadGTFS(url string) (bytes []byte, err error){
+func Download(url string) (bytes []byte, err error){
 	
 	n := time.Now()
 	// need to be 24 hours when live
@@ -54,7 +54,7 @@ func DownloadGTFS(url string) (bytes []byte, err error){
 }
 
 // we need a test for this as well.
-func ParseGTFSZipIntoGTFSFiles (zbytes []byte) (files []GTFSCSVFile, err error){
+func ParseZipIntoFiles (zbytes []byte) (files []CSVFile, err error){
 	reader := bytes.NewReader(zbytes)
     zreader, err := zip.NewReader(reader, int64(len(zbytes)))
 	if err != nil {
@@ -79,7 +79,7 @@ func ParseGTFSZipIntoGTFSFiles (zbytes []byte) (files []GTFSCSVFile, err error){
 			break
 		}
 
-		files = append(files, GTFSCSVFile{data[0], data[1:], file.Name})
+		files = append(files, CSVFile{data[0], data[1:], file.Name})
 	}
 
 	// we get zip files but not real files. 	
@@ -143,6 +143,9 @@ func UnmarshallShapes(header []string, rows[][]string) (shapes []Shape, err erro
 
 func UnmarshallStops(header []string, rows[][]string) (stops []Stop, err error) {
 	err = unmarshalSlice(header, rows, &stops)
+	for _, s := range stops {
+		s.GeoPoint = latlng.LatLng{Latitude: s.Lat, Longitude: s.Lon}
+	}
 	return  
 }
 

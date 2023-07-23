@@ -7,18 +7,18 @@ import (
 )
 
 func init(){
-	fmt.Println("Running gtfs_progress_tests")
+	fmt.Println("Running progress_tests")
 }
 
 
 // Testing based on smaller GTFSDK.zip file. 
-func TestUnzipGTFSFromBytes(t *testing.T){
+func TestUnzipFromBytes(t *testing.T){
 	
 	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
-	messages := make(chan GTFSLoadProgress)
+	messages := make(chan LoadProgress)
 	errorChannel := make(chan error)
 	
 	go func(){
@@ -36,7 +36,7 @@ func TestUnzipGTFSFromBytes(t *testing.T){
 		}
 	}()
 
-	gtfs := NewGTFSFromZipBytesWithProgress("GTFS.zip",zbytes, messages, errorChannel)
+	gtfs := NewFromZipBytesWithProgress("GTFS.zip",zbytes, messages, errorChannel)
 	
 	assert.Len(t, gtfs.Agencies, 40)
 	assert.Len(t, gtfs.Attributions, 1)
@@ -51,13 +51,13 @@ func TestUnzipGTFSFromBytes(t *testing.T){
 	assert.Len(t, gtfs.Trips, 98)
 }
 
-func TestUnzipGTFSFromBytesTooManyColumns(t *testing.T){
+func TestUnzipFromBytesTooManyColumns(t *testing.T){
 	
 	zbytes, err := getBytesFromZipFile("test_data/GTFS_TOO_MANY_AGENCY_COLUMNS.zip")
 	if err != nil {
 		t.Error(err.Error())
 	}
-	messages := make(chan GTFSLoadProgress)
+	messages := make(chan LoadProgress)
 	errorChannel := make(chan error)
 	
 	go func(){
@@ -74,17 +74,17 @@ func TestUnzipGTFSFromBytesTooManyColumns(t *testing.T){
 		}
 	}()
 
-	NewGTFSFromZipBytesWithProgress("GTFS.zip",zbytes, messages, errorChannel)
+	NewFromZipBytesWithProgress("GTFS.zip",zbytes, messages, errorChannel)
 	assert.ErrorContains(t, err,"Error reading file 'agency.txt'")
 }
 
-func TestUnzipGTFSFromBytesMissingColumn(t *testing.T){
+func TestUnzipFromBytesMissingColumn(t *testing.T){
 	
 	zbytes, err := getBytesFromZipFile("test_data/GTFS_MISSING_AGENCY_COLUMN.zip")
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
-	messages := make(chan GTFSLoadProgress)
+	messages := make(chan LoadProgress)
 	errorChannel := make(chan error)
 	
 	go func(){
@@ -101,17 +101,17 @@ func TestUnzipGTFSFromBytesMissingColumn(t *testing.T){
 		}
 	}()
 
-	NewGTFSFromZipBytesWithProgress("GTFS.zip",zbytes, messages, errorChannel)
+	NewFromZipBytesWithProgress("GTFS.zip",zbytes, messages, errorChannel)
 	assert.ErrorContains(t, err,"Error reading file 'agency.txt'")
 }
 
-func TestUnzipGTFSFromBytesWrongAgencyField(t *testing.T){
+func TestUnzipFromBytesWrongAgencyField(t *testing.T){
 	
 	zbytes, err := getBytesFromZipFile("test_data/GTFS_WRONG_AGENCY_FIELD.zip")
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
-	messages := make(chan GTFSLoadProgress)
+	messages := make(chan LoadProgress)
 	errorChannel := make(chan error)
 	
 	go func(){
@@ -128,6 +128,6 @@ func TestUnzipGTFSFromBytesWrongAgencyField(t *testing.T){
 		}
 	}()
 
-	NewGTFSFromZipBytesWithProgress("GTFS.zip",zbytes, messages, errorChannel)
+	NewFromZipBytesWithProgress("GTFS.zip",zbytes, messages, errorChannel)
 	assert.ErrorContains(t, err,"Error: 'agency.txt' missing required field(s)")
 }

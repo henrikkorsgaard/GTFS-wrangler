@@ -16,7 +16,7 @@ import (
 	"google.golang.org/genproto/googleapis/type/latlng"
 )
 
-type GTFSLoadProgress struct {
+type LoadProgress struct {
 	Filename	string
 	Percent 	int
 	RowLength	int
@@ -45,10 +45,6 @@ type GTFS struct {
 	Attributions 	[]Attribution	`csv:"attributions.txt" required:"false"`
 }
 
-/*
-	this would be a NewGTFSFromZipBytes(filename string, bytes[], process channel) (gtfs GTFS)
-
-*/
 
 /*
 	TODO
@@ -75,6 +71,7 @@ type Stop struct {
 	Code	 			string `csv:"stop_code" required:"false"`
 	Name				string `csv:"stop_name" required:"true"`
 	Description			string `csv:"stop_desc" required:"false"`
+	GeoPoint			latlng.LatLng
 	Lat					float64 `csv:"stop_lat" required:"true"`
 	Lon    				float64 `csv:"stop_lon" required:"true"`
 	ZoneId				string `csv:"zone_id" required:"false"`   // only required if having fare_rules.txt in the dataset. We need some way of validating that.

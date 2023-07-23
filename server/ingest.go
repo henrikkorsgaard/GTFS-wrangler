@@ -16,6 +16,13 @@ func main(){
 		panic(err)
 	}
 
+	// what is a good ingest patter?
+	// download, then convert to structs, then insert into the db?
+	// or just download, the put into DB?
+	
+	// ALSO: do we have 
+
+
 	// if returning zero bytes, we assume the resource has not been modified.
 	if len(bytes) == 0 {
 		fmt.Printf("Nothing downloaded from '%s'. Resource not modified since last time.\n", url)
