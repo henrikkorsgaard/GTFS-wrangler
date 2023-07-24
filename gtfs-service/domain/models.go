@@ -1,4 +1,4 @@
-package gtfs
+package domain
 /* Models based on spec: https://developers.google.com/transit/	gtfs/reference
  Currently only support primitive types, because I use golang reflect package to unmarshal
 

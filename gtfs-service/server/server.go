@@ -1,4 +1,6 @@
-package main
+package server
+/*
+
  
 import (
   "fmt"
@@ -6,7 +8,7 @@ import (
   "github.com/gofiber/fiber/v2/middleware/cors" // not sure we need this anymore.
   "github.com/gofiber/websocket/v2"
 
-  "henrikkorsgaard.dk/GTFS-wrangler/gtfs"
+  "henrikkorsgaard.dk/gtfs-service/ingest"
 
 )
 
@@ -147,3 +149,4 @@ func websocketUpgrader(c *fiber.Ctx) error {
 		return fiber.ErrUpgradeRequired
 }
 
+*/

@@ -1,24 +1,25 @@
-package gtfs
+package ingest
 
 import (
 	"fmt"
 	"testing"
 	"github.com/stretchr/testify/assert"
-	"path/filepath"
-	"io"
-	"os"
-	"bufio"
 
+	"henrikkorsgaard.dk/gtfs-service/util"
+)
+
+var (
+	testDataString string = "../test_data/GTFSDK.zip"
 )
 
 func init(){
-	fmt.Println("Running gtfs_tests")
+	fmt.Println("Running ingest_tests")
 }
 
 
 // Testing based on smaller GTFSDK.zip file. 
 func TestParseZipIntoFiles(t *testing.T){
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -43,7 +44,7 @@ func TestParseZipIntoFiles(t *testing.T){
 
 func TestMarshalAgency(t *testing.T){
 	
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -65,7 +66,7 @@ func TestMarshalAgency(t *testing.T){
 
 
 func TestMarshalAttribution(t *testing.T){
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -85,7 +86,7 @@ func TestMarshalAttribution(t *testing.T){
 
 
 func TestMarshalCalendar(t *testing.T){
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -105,7 +106,7 @@ func TestMarshalCalendar(t *testing.T){
 
 
 func TestMarshalCalendarDate(t *testing.T){
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -125,7 +126,7 @@ func TestMarshalCalendarDate(t *testing.T){
 
 
 func TestMarshalFrequency(t *testing.T){
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -145,7 +146,7 @@ func TestMarshalFrequency(t *testing.T){
 
 
 func TestMarshalRoute(t *testing.T){
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -164,7 +165,7 @@ func TestMarshalRoute(t *testing.T){
 }
 
 func TestMarshalShape(t *testing.T){
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -184,7 +185,7 @@ func TestMarshalShape(t *testing.T){
 }
 
 func TestMarshalStops(t *testing.T){
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -204,7 +205,7 @@ func TestMarshalStops(t *testing.T){
 }
 
 func TestMarshalStopTimes(t *testing.T){
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -224,7 +225,7 @@ func TestMarshalStopTimes(t *testing.T){
 }
 
 func TestMarshalTransfers(t *testing.T){
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -244,7 +245,7 @@ func TestMarshalTransfers(t *testing.T){
 }
 
 func TestMarshalTrips(t *testing.T){
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -261,31 +262,4 @@ func TestMarshalTrips(t *testing.T){
 	}
 	
 	assert.Len(t, trips, 98)
-}
-
-func getBytesFromZipFile(path string) (zbytes []byte, err error) {
-	
-	gtfs, err := filepath.Abs(path)
-	if err != nil {
-		return
-	}
-
-	file, err := os.Open(gtfs)
-	if err != nil {
-		return
-	}
-	defer file.Close()
-
-	stat, err := file.Stat();
-	if err != nil {
-		return
-	}
-
-	zbytes = make([]byte, stat.Size())
-	_, err = bufio.NewReader(file).Read(zbytes)
-	if err != nil && err != io.EOF {
-		return
-	}
-
-	return
 }

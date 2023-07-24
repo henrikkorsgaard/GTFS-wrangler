@@ -5,6 +5,13 @@ import (
 	"testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/joho/godotenv"
+
+	"henrikkorsgaard.dk/gtfs-service/util"
+	"henrikkorsgaard.dk/gtfs-service/ingest"
+)
+
+var (
+	testDataString string = "../test_data/GTFSDK.zip"
 )
 
 func init(){
@@ -14,18 +21,18 @@ func init(){
 
 func TestIngestStops(t *testing.T){
 	
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
 
-	gtfsFiles, err := ParseZipIntoFiles(zbytes)
+	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
 	if err != nil {
 		t.Error("Error TestIngestStops!")
 	}
 
 	data := gtfsFiles[7]
-	stops, err := UnmarshallStops(data.Header, data.Records)
+	stops, err := ingest.UnmarshallStops(data.Header, data.Records)
 	if err != nil {
 		t.Error("Error TestIngestStops: " + err.Error())
 	}
@@ -42,18 +49,18 @@ func TestIngestStops(t *testing.T){
 
 func TestIngestRoutes(t *testing.T){
 
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
 
-	gtfsFiles, err := ParseZipIntoFiles(zbytes)
+	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
 	if err != nil {
 		t.Error("Error TestIngestRoutes!")
 	}
 
 	data := gtfsFiles[5]
-	routes, err := UnmarshallRoutes(data.Header, data.Records)
+	routes, err := ingest.UnmarshallRoutes(data.Header, data.Records)
 	if err != nil {
 		t.Error("Error TestIngestRoutes: " + err.Error())
 	}
@@ -72,18 +79,18 @@ func TestIngestRoutes(t *testing.T){
 
 func TestIngestTrips(t *testing.T){
 	
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
 
-	gtfsFiles, err := ParseZipIntoFiles(zbytes)
+	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
 	if err != nil {
 		t.Error("Error TestIngestTrips!")
 	}
 
 	data := gtfsFiles[10]
-	trips, err := UnmarshallTrips(data.Header, data.Records)
+	trips, err := ingest.UnmarshallTrips(data.Header, data.Records)
 	if err != nil {
 		t.Error("Error TestIngestTrips: " + err.Error())
 	}
@@ -99,18 +106,18 @@ func TestIngestTrips(t *testing.T){
 
 func TestIngestShapes(t *testing.T){
 	
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
 
-	gtfsFiles, err := ParseZipIntoFiles(zbytes)
+	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
 	if err != nil {
 		t.Error("Error TestIngestShapes!")
 	}
 
 	data := gtfsFiles[6]
-	shapes, err := UnmarshallShapes(data.Header, data.Records)
+	shapes, err := ingest.UnmarshallShapes(data.Header, data.Records)
 	if err != nil {
 		t.Error("Error TestIngestShapes: " + err.Error())
 	}
@@ -126,18 +133,18 @@ func TestIngestShapes(t *testing.T){
 
 func TestIngestStopTimes(t *testing.T){
 	
-	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	zbytes, err := util.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
 
-	gtfsFiles, err := ParseZipIntoFiles(zbytes)
+	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
 	if err != nil {
 		t.Error("Error TestStopTimes!")
 	}
 
 	data := gtfsFiles[8]
-	stoptimes, err := UnmarshallStopTimes(data.Header, data.Records)
+	stoptimes, err := ingest.UnmarshallStopTimes(data.Header, data.Records)
 	if err != nil {
 		t.Error("Error TestStopTimes: " + err.Error())
 	}
@@ -150,3 +157,4 @@ func TestIngestStopTimes(t *testing.T){
 	err = repo.IngestStopTimes(stoptimes)
 	assert.NoError(t, err)
 }
+

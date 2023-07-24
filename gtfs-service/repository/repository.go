@@ -8,6 +8,8 @@ import (
 	"strings"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5"
+
+	"henrikkorsgaard.dk/gtfs-service/domain"
 )
 
 var (
@@ -48,7 +50,7 @@ func (repo *repository) Close(){
 	repo.pool.Close()
 }
 
-func (repo *repository) IngestStops(stops []Stop) (err error){
+func (repo *repository) IngestStops(stops []domain.Stop) (err error){
 
 	query := `INSERT INTO stops (id, name, description, geo_point, parent_station) VALUES (@id, @name, @description, @point, @parentstation) ON CONFLICT (id) DO NOTHING`
 
@@ -90,7 +92,7 @@ func (repo *repository) IngestStops(stops []Stop) (err error){
 	
 }
 
-func (repo *repository) IngestRoutes(routes []Route) (err error){
+func (repo *repository) IngestRoutes(routes []domain.Route) (err error){
 
 	query := `INSERT INTO routes (id, agency_id, short_name, long_name, type) VALUES (@id, @agencyid, @name, @longname, @type) ON CONFLICT (id) DO NOTHING`
 
@@ -128,7 +130,7 @@ func (repo *repository) IngestRoutes(routes []Route) (err error){
 	
 }
 
-func (repo *repository) IngestTrips(trips []Trip) (err error){
+func (repo *repository) IngestTrips(trips []domain.Trip) (err error){
 	query := `INSERT INTO trips (id, service_id, route_id,shape_id, trip_headsign) VALUES (@id, @serviceid, @routeid,@shapeid,@tripheadsign) ON CONFLICT (id) DO NOTHING`
 
 	batch := &pgx.Batch{}
@@ -163,7 +165,7 @@ func (repo *repository) IngestTrips(trips []Trip) (err error){
 	return results.Close()
 }
 
-func (repo *repository) IngestShapes(shapes []Shape) (err error){
+func (repo *repository) IngestShapes(shapes []domain.Shape) (err error){
 	
 	query := `INSERT INTO shapes (id, geo_line) VALUES (@id, @line) ON CONFLICT (id) DO NOTHING`
 	
@@ -205,7 +207,7 @@ func (repo *repository) IngestShapes(shapes []Shape) (err error){
 	return results.Close()
 }
 
-func (repo *repository) IngestStopTimes(stopTimes []StopTime) (err error){
+func (repo *repository) IngestStopTimes(stopTimes []domain.StopTime) (err error){
 
 	query := `INSERT INTO stoptimes (trip_id, stop_id, arrival, departure, stop_sequence) VALUES (@tripid, @stopid, @arrival, @departure, @sequence) ON CONFLICT (trip_id, stop_id) DO NOTHING`
 
