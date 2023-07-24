@@ -50,7 +50,7 @@ func (repo *repository) Close(){
 
 func (repo *repository) IngestStops(stops []Stop) (err error){
 
-	query := `INSERT INTO stops (id, name, description, point, parentstation) VALUES (@id, @name, @description, @point, @parentstation) ON CONFLICT (id) DO NOTHING`
+	query := `INSERT INTO stops (id, name, description, geo_point, parent_station) VALUES (@id, @name, @description, @point, @parentstation) ON CONFLICT (id) DO NOTHING`
 
 	batch := &pgx.Batch{}
 
@@ -72,13 +72,15 @@ func (repo *repository) IngestStops(stops []Stop) (err error){
 
 	defer results.Close()
 	
-	// this is a bit weird, but the exec fetches the result for each query in the queue. We want to do this len(stops) times to make sure no errors happen. 
-	for _,_ = range stops {
+	// The batch processing in PGX is a bit weird in terms of design. The exec fetches the result for each query in the queue for each item in the queue. The easiest way to fetch all is to use the length of the queue.
+
+	for i, n := 0, batch.Len(); i < n ; i++ {
 		_, err = results.Exec()
 		if err != nil {
 			break 
 		}
-	}
+	} 
+
 
 	if err != nil {
 		return
@@ -90,7 +92,7 @@ func (repo *repository) IngestStops(stops []Stop) (err error){
 
 func (repo *repository) IngestRoutes(routes []Route) (err error){
 
-	query := `INSERT INTO routes (id, agencyid, name, longname, type) VALUES (@id, @agencyid, @name, @longname, @type) ON CONFLICT (id) DO NOTHING`
+	query := `INSERT INTO routes (id, agency_id, short_name, long_name, type) VALUES (@id, @agencyid, @name, @longname, @type) ON CONFLICT (id) DO NOTHING`
 
 	batch := &pgx.Batch{}
 
@@ -110,9 +112,8 @@ func (repo *repository) IngestRoutes(routes []Route) (err error){
 	results := repo.pool.SendBatch(context.Background(), batch)
 
 	defer results.Close()
-	
-	// this is a bit weird, but the exec fetches the result for each query in the queue. We want to do this len(stops) times to make sure no errors happen. 
-	for _,_ = range routes {
+	 
+	for i, n := 0, batch.Len(); i < n ; i++ {
 		_, err = results.Exec()
 		if err != nil {
 			break 
@@ -128,7 +129,7 @@ func (repo *repository) IngestRoutes(routes []Route) (err error){
 }
 
 func (repo *repository) IngestTrips(trips []Trip) (err error){
-	query := `INSERT INTO trips (id, serviceid, routeid,shapeid, tripheadsign) VALUES (@id, @serviceid, @routeid,@shapeid,@tripheadsign) ON CONFLICT (id) DO NOTHING`
+	query := `INSERT INTO trips (id, service_id, route_id,shape_id, trip_headsign) VALUES (@id, @serviceid, @routeid,@shapeid,@tripheadsign) ON CONFLICT (id) DO NOTHING`
 
 	batch := &pgx.Batch{}
 
@@ -148,13 +149,12 @@ func (repo *repository) IngestTrips(trips []Trip) (err error){
 
 	defer results.Close()
 	
-	// this is a bit weird, but the exec fetches the result for each query in the queue. We want to do this len(stops) times to make sure no errors happen. 
-	for _,_ = range trips {
+	for i, n := 0, batch.Len(); i < n ; i++ {
 		_, err = results.Exec()
 		if err != nil {
 			break 
 		}
-	}
+	} 
 
 	if err != nil {
 		return
@@ -165,7 +165,7 @@ func (repo *repository) IngestTrips(trips []Trip) (err error){
 
 func (repo *repository) IngestShapes(shapes []Shape) (err error){
 	
-	query := `INSERT INTO shapes (id, line) VALUES (@id, @line) ON CONFLICT (id) DO NOTHING`
+	query := `INSERT INTO shapes (id, geo_line) VALUES (@id, @line) ON CONFLICT (id) DO NOTHING`
 	
 	batch := &pgx.Batch{}
 
@@ -191,13 +191,12 @@ func (repo *repository) IngestShapes(shapes []Shape) (err error){
 
 	defer results.Close()
 	
-	// this is a bit weird, but the exec fetches the result for each query in the queue. We want to do this len(stops) times to make sure no errors happen. 
-	for _,_ = range shapes {
+	for i, n := 0, batch.Len(); i < n ; i++ {
 		_, err = results.Exec()
 		if err != nil {
 			break 
 		}
-	}
+	} 
 
 	if err != nil {
 		return
@@ -206,12 +205,41 @@ func (repo *repository) IngestShapes(shapes []Shape) (err error){
 	return results.Close()
 }
 
+func (repo *repository) IngestStopTimes(stopTimes []StopTime) (err error){
 
+	query := `INSERT INTO stoptimes (trip_id, stop_id, arrival, departure, stop_sequence) VALUES (@tripid, @stopid, @arrival, @departure, @sequence) ON CONFLICT (trip_id, stop_id) DO NOTHING`
 
+	batch := &pgx.Batch{}
 
+	for _, s := range stopTimes {
 
+		args := pgx.NamedArgs{
+			"tripid": s.TripID,
+			"stopid": s.StopID,
+			"arrival":s.Arrival,
+			"departure": s.Departure,
+			"sequence": s.StopSequence,
+		}
 
-// Not sure I need context
-// Read: https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go
-// Read: https://threedots.tech/post/repository-pattern-in-go/
-// Read: https://pkg.go.dev/database/sql#DB.QueryRowContext
+		batch.Queue(query, args)
+		
+	}
+
+	results := repo.pool.SendBatch(context.Background(), batch)
+
+	defer results.Close()
+	
+	for i, n := 0, batch.Len(); i < n ; i++ {
+		_, err = results.Exec()
+		if err != nil {
+			break 
+		}
+	} 
+
+	if err != nil {
+		return
+	}
+
+	return results.Close()
+}
+

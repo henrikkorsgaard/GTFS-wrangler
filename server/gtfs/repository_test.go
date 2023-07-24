@@ -123,3 +123,30 @@ func TestIngestShapes(t *testing.T){
 	err = repo.IngestShapes(shapes)
 	assert.NoError(t, err)
 }
+
+func TestIngestStopTimes(t *testing.T){
+	
+	zbytes, err := getBytesFromZipFile("test_data/GTFSDK.zip")
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+
+	gtfsFiles, err := ParseZipIntoFiles(zbytes)
+	if err != nil {
+		t.Error("Error TestStopTimes!")
+	}
+
+	data := gtfsFiles[8]
+	stoptimes, err := UnmarshallStopTimes(data.Header, data.Records)
+	if err != nil {
+		t.Error("Error TestStopTimes: " + err.Error())
+	}
+
+	repo, err := NewRepository()
+	if err != nil {
+		t.Error("Error TestStopTimes: " + err.Error())
+	}
+
+	err = repo.IngestStopTimes(stoptimes)
+	assert.NoError(t, err)
+}
