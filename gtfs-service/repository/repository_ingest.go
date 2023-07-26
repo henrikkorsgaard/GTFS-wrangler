@@ -40,46 +40,7 @@ func (repo *repository) IngestStops(stops []domain.Stop) (err error){
 	}
 
 	return tx.Commit()
-	/*
-	query := `INSERT INTO stops (id, name, description, geo_point, parent_station) VALUES (@id, @name, @description, @point, @parentstation) ON CONFLICT (id) DO NOTHING`
-
-	batch := &pgx.Batch{}
-
-	for _, s := range stops {
-		p := wkb.Point{Point:&s.GeoPoint}
-		fmt.Printf("%#v\n", p)
-		args := pgx.NamedArgs{
-			"id": s.ID,
-			"name": s.Name,
-			"description":s.Description,
-			"point": p,
-			"parentstation": s.ParentStation,
-		}
-
-		batch.Queue(query, args)
-	}
-
-	results := repo.pool.SendBatch(context.Background(), batch)
-
-	defer results.Close()
 	
-	// The batch processing in PGX is a bit weird in terms of design. The exec fetches the result for each query in the queue for each item in the queue. The easiest way to fetch all is to use the length of the queue.
-
-	for i, n := 0, batch.Len(); i < n ; i++ {
-		_, err = results.Exec()
-		if err != nil {
-			break 
-		}
-	} 
-
-
-	if err != nil {
-		return
-	}
-
-	return results.Close()
-	*/
-	return
 }
 
 func (repo *repository) IngestRoutes(routes []domain.Route) (err error){
@@ -160,48 +121,33 @@ func (repo *repository) IngestTrips(trips []domain.Trip) (err error){
 }
 
 func (repo *repository) IngestShapes(shapes []domain.Shape) (err error){
-	/*
-
-	query := `INSERT INTO shapes (id, geo_line) VALUES (@id, @line) ON CONFLICT (id) DO NOTHING`
-	
-	batch := &pgx.Batch{}
-
-	for _, s := range shapes {
-
-		coordStrings := make([]string, 0)
-		for _, ll := range s.Coordinates {
-			llstr := fmt.Sprintf("%f %f", ll.Longitude, ll.Latitude)
-			coordStrings = append(coordStrings, llstr)
-		}
-	
-		line := fmt.Sprintf("LINESTRING(%s)", strings.Join(coordStrings[0:], ","))
-
-		args := pgx.NamedArgs{
-			"id": s.ID,
-			"line": line,
-		}
-
-		batch.Queue(query, args)
+	tx, err := repo.db.Begin()
+	if err != nil {
+		return
 	}
+	defer tx.Rollback()
 
-	results := repo.pool.SendBatch(context.Background(), batch)
-
-	defer results.Close()
-	
-	for i, n := 0, batch.Len(); i < n ; i++ {
-		_, err = results.Exec()
-		if err != nil {
-			break 
-		}
-	} 
-
+	stmt, err := tx.Prepare(pq.CopyIn("shapes","id", "geo_line"))
 	if err != nil {
 		return
 	}
 
-	return results.Close()
-	*/ 
-	return
+	for _, s := range shapes {	
+		ewkbhexGeom, err := ewkbhex.Encode(&s.GeoLineString, ewkbhex.NDR)
+		if err != nil {
+			return err
+		}
+
+		if _, err = stmt.Exec(s.ID, ewkbhexGeom); err != nil {
+			return err
+		}
+	}
+
+	if _, err = stmt.Exec(); err != nil {
+		return
+	}
+
+	return tx.Commit()
 }
 
 func (repo *repository) IngestStopTimes(stopTimes []domain.StopTime) (err error){

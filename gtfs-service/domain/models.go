@@ -13,7 +13,6 @@ package domain
 */ 
 
 import (
-	"google.golang.org/genproto/googleapis/type/latlng"
 	"github.com/twpayne/go-geom"	
 )
 
@@ -184,7 +183,7 @@ type Shape struct {
 	Lat					float64 `csv:"shape_pt_lat" required:"true"`
 	Lon					float64 `csv:"shape_pt_lon" required:"true"`
 	Sequence			string `csv:"shape_pt_sequence" required:"true"`
-	Coordinates			[]latlng.LatLng // we like this instead of the sequenct because the datatype for sequence is given
+	GeoLineString		geom.LineString
 	DistanceTraveled	string `csv:"shape_dist_traveled" required:"false"`
 }
 

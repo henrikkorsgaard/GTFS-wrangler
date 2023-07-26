@@ -179,7 +179,7 @@ func TestMarshalShape(t *testing.T){
 	if err != nil {
 		t.Error("Error TestMarshalShape: " + err.Error())
 	}
-	
+	fmt.Printf("%#v\n", shapes[0])
 	assert.Len(t, shapes, 4)
 }
 

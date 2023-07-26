@@ -51,7 +51,6 @@ func TestIngestFetchStops(t *testing.T){
 	assert.NoError(t, err)
 
 	dbStops, err :=  repo.FetchStops();
-	fmt.Printf("%#v\n", dbStops[0])
 	assert.Equal(t,len(data.Records), len(dbStops))
 
 }

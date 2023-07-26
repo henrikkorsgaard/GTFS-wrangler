@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"time"
 	"net/http"
-	"google.golang.org/genproto/googleapis/type/latlng"
+
 	"github.com/twpayne/go-geom"
 	"henrikkorsgaard.dk/gtfs-service/domain"
 )
@@ -124,20 +124,27 @@ func UnmarshallShapes(header []string, rows[][]string) (shapes []domain.Shape, e
 	err = unmarshalSlice(header, rows, &shapes)
 	
 	shapeMap := make(map[string]domain.Shape)
+	coordMap := make(map[string][]geom.Coord)
 	for _, s := range shapes {
-		ll := latlng.LatLng{Latitude:s.Lat,Longitude:s.Lon}
-		if shp, ok := shapeMap[s.ID]; ok {
-			shp.Coordinates = append(shp.Coordinates, ll)
-			shapeMap[s.ID] = shp
+		coord := geom.Coord{s.Lon, s.Lat}
+		
+		if _, ok := shapeMap[s.ID]; ok {
+			coordMap[s.ID] = append(coordMap[s.ID], coord)
 		} else {
-			s.Coordinates = append(s.Coordinates, ll)
+			coordMap[s.ID] = []geom.Coord{coord}
 			shapeMap[s.ID] = s
 		}
 	}
 	
 	shapes = make([]domain.Shape, 0, len(shapeMap))
 
-	for _, s := range shapeMap {
+	for k, s := range shapeMap {
+
+	    ls := geom.NewLineString(geom.XY)
+		ls.SetSRID(4326)
+		ls.MustSetCoords(coordMap[k])
+
+		s.GeoLineString = *ls
 		shapes = append(shapes, s)
 	}
 	
