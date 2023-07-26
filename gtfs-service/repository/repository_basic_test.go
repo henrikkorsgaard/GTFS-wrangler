@@ -1,27 +1,30 @@
-package gtfs
+package repository
 
 import (
 	"fmt"
 	"testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/joho/godotenv"
-
-	"henrikkorsgaard.dk/gtfs-service/util"
+	"henrikkorsgaard.dk/gtfs-service/testutils"
 	"henrikkorsgaard.dk/gtfs-service/ingest"
 )
 
 var (
-	testDataString string = "../test_data/GTFSDK.zip"
+	testDataString string = "../testutils/data/GTFSDK.zip"
 )
 
 func init(){
-	fmt.Println("Running repository_tests")
-	godotenv.Load("sql/database.env")
+	fmt.Println("Running repository basic ingest and fetch tests")
+	godotenv.Load("../config_dev.env")
+	err := testutils.ResetDatabase("./sql/gtfs.sql")
+	if err != nil {
+		panic(err)
+	}
 }
 
-func TestIngestStops(t *testing.T){
+func TestIngestFetchStops(t *testing.T){
 	
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -39,17 +42,23 @@ func TestIngestStops(t *testing.T){
 
 	// Singleton, so we will get the same each time anyways!
 	repo, err := NewRepository()
+
 	if err != nil {
 		t.Error("Error TestIngestStops: " + err.Error())
 	}
 
 	err = repo.IngestStops(stops)
 	assert.NoError(t, err)
+
+	dbStops, err :=  repo.FetchStops();
+	fmt.Printf("%#v\n", dbStops[0])
+	assert.Equal(t,len(data.Records), len(dbStops))
+
 }
 
 func TestIngestRoutes(t *testing.T){
 
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -72,14 +81,11 @@ func TestIngestRoutes(t *testing.T){
 
 	err = repo.IngestRoutes(routes)
 	assert.NoError(t, err)
-	// we need to assert the success as well -- no errors is not enough?
-	// this means wiping the database before running each test!
 }
-
 
 func TestIngestTrips(t *testing.T){
 	
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -96,6 +102,7 @@ func TestIngestTrips(t *testing.T){
 	}
 
 	repo, err := NewRepository()
+
 	if err != nil {
 		t.Error("Error TestIngestTrips: " + err.Error())
 	}
@@ -106,7 +113,7 @@ func TestIngestTrips(t *testing.T){
 
 func TestIngestShapes(t *testing.T){
 	
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -123,6 +130,7 @@ func TestIngestShapes(t *testing.T){
 	}
 
 	repo, err := NewRepository()
+
 	if err != nil {
 		t.Error("Error TestIngestShapes: " + err.Error())
 	}
@@ -133,7 +141,7 @@ func TestIngestShapes(t *testing.T){
 
 func TestIngestStopTimes(t *testing.T){
 	
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -150,6 +158,7 @@ func TestIngestStopTimes(t *testing.T){
 	}
 
 	repo, err := NewRepository()
+	
 	if err != nil {
 		t.Error("Error TestStopTimes: " + err.Error())
 	}
@@ -157,4 +166,3 @@ func TestIngestStopTimes(t *testing.T){
 	err = repo.IngestStopTimes(stoptimes)
 	assert.NoError(t, err)
 }
-

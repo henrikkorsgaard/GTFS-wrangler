@@ -5,11 +5,11 @@ import (
 	"testing"
 	"github.com/stretchr/testify/assert"
 
-	"henrikkorsgaard.dk/gtfs-service/util"
+	"henrikkorsgaard.dk/gtfs-service/testutils"
 )
 
 var (
-	testDataString string = "../test_data/GTFSDK.zip"
+	testDataString string = "../testutils/data/GTFSDK.zip"
 )
 
 func init(){
@@ -17,9 +17,8 @@ func init(){
 }
 
 
-// Testing based on smaller GTFSDK.zip file. 
 func TestParseZipIntoFiles(t *testing.T){
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -44,7 +43,7 @@ func TestParseZipIntoFiles(t *testing.T){
 
 func TestMarshalAgency(t *testing.T){
 	
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -66,7 +65,7 @@ func TestMarshalAgency(t *testing.T){
 
 
 func TestMarshalAttribution(t *testing.T){
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -86,7 +85,7 @@ func TestMarshalAttribution(t *testing.T){
 
 
 func TestMarshalCalendar(t *testing.T){
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -106,7 +105,7 @@ func TestMarshalCalendar(t *testing.T){
 
 
 func TestMarshalCalendarDate(t *testing.T){
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -126,7 +125,7 @@ func TestMarshalCalendarDate(t *testing.T){
 
 
 func TestMarshalFrequency(t *testing.T){
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -146,7 +145,7 @@ func TestMarshalFrequency(t *testing.T){
 
 
 func TestMarshalRoute(t *testing.T){
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -165,7 +164,7 @@ func TestMarshalRoute(t *testing.T){
 }
 
 func TestMarshalShape(t *testing.T){
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -185,7 +184,7 @@ func TestMarshalShape(t *testing.T){
 }
 
 func TestMarshalStops(t *testing.T){
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -205,7 +204,7 @@ func TestMarshalStops(t *testing.T){
 }
 
 func TestMarshalStopTimes(t *testing.T){
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -225,7 +224,7 @@ func TestMarshalStopTimes(t *testing.T){
 }
 
 func TestMarshalTransfers(t *testing.T){
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}
@@ -245,7 +244,7 @@ func TestMarshalTransfers(t *testing.T){
 }
 
 func TestMarshalTrips(t *testing.T){
-	zbytes, err := util.GetBytesFromZipFile(testDataString)
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
 	}

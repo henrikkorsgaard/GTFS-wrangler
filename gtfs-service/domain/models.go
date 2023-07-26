@@ -14,6 +14,7 @@ package domain
 
 import (
 	"google.golang.org/genproto/googleapis/type/latlng"
+	"github.com/twpayne/go-geom"	
 )
 
 type LoadProgress struct {
@@ -71,6 +72,7 @@ type Stop struct {
 	Code	 			string `csv:"stop_code" required:"false"`
 	Name				string `csv:"stop_name" required:"true"`
 	Description			string `csv:"stop_desc" required:"false"`
+	GeoPoint geom.Point // I could use wbk.Point, but that is for encoding/decoding primarily. Until I know more I stick witht he more basic geom.Point
 	Lat					float64 `csv:"stop_lat" required:"true"`
 	Lon    				float64 `csv:"stop_lon" required:"true"`
 	ZoneId				string `csv:"zone_id" required:"false"`   // only required if having fare_rules.txt in the dataset. We need some way of validating that.

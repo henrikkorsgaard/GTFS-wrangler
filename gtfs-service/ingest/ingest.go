@@ -12,6 +12,7 @@ import (
 	"time"
 	"net/http"
 	"google.golang.org/genproto/googleapis/type/latlng"
+	"github.com/twpayne/go-geom"
 	"henrikkorsgaard.dk/gtfs-service/domain"
 )
 
@@ -145,6 +146,14 @@ func UnmarshallShapes(header []string, rows[][]string) (shapes []domain.Shape, e
 
 func UnmarshallStops(header []string, rows[][]string) (stops []domain.Stop, err error) {
 	err = unmarshalSlice(header, rows, &stops)
+	for i, n := 0, len(stops); i < n ; i++ {
+		p := geom.NewPoint(geom.XY)
+		p.SetSRID(4326)
+		// This will panic -- handle when we implement full logging.
+		p.MustSetCoords(geom.Coord{stops[i].Lon,stops[i].Lat})
+		stops[i].GeoPoint = *p
+	}
+
 	return  
 }
 
