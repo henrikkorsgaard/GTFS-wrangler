@@ -44,80 +44,55 @@ func (repo *repository) IngestStops(stops []domain.Stop) (err error){
 }
 
 func (repo *repository) IngestRoutes(routes []domain.Route) (err error){
-	/*
-	query := `INSERT INTO routes (id, agency_id, short_name, long_name, type) VALUES (@id, @agencyid, @name, @longname, @type) ON CONFLICT (id) DO NOTHING`
-
-	batch := &pgx.Batch{}
-
-	for _, r := range routes {
-		
-		args := pgx.NamedArgs{
-			"id": r.ID,
-			"agencyid": r.AgencyID,
-			"name":r.Name,
-			"longname": r.LongName,
-			"type": r.Type,
-		}
-
-		batch.Queue(query, args)
+	tx, err := repo.db.Begin()
+	if err != nil {
+		return
 	}
+	defer tx.Rollback()
 
-	results := repo.pool.SendBatch(context.Background(), batch)
-
-	defer results.Close()
-	 
-	for i, n := 0, batch.Len(); i < n ; i++ {
-		_, err = results.Exec()
-		if err != nil {
-			break 
-		}
-	}
-
+	stmt, err := tx.Prepare(pq.CopyIn("routes","id", "agency_id", "short_name", "long_name", "type"))
 	if err != nil {
 		return
 	}
 
-	return results.Close()
-	*/
-	return
+	for _, r := range routes {	
+		
+		if _, err = stmt.Exec(r.ID, r.AgencyID, r.Name, r.LongName, r.Type); err != nil {
+			return err
+		}
+	}
+
+	if _, err = stmt.Exec(); err != nil {
+		return
+	}
+
+	return tx.Commit()
 }
 
 func (repo *repository) IngestTrips(trips []domain.Trip) (err error){
-	/*
-	query := `INSERT INTO trips (id, service_id, route_id,shape_id, trip_headsign) VALUES (@id, @serviceid, @routeid,@shapeid,@tripheadsign) ON CONFLICT (id) DO NOTHING`
-
-	batch := &pgx.Batch{}
-
-	for _, t := range trips {
-		args := pgx.NamedArgs{
-			"id": t.ID,
-			"serviceid": t.ServiceID,
-			"routeid":t.RouteID,
-			"shapeid": t.ShapeID,
-			"tripheadsign": t.TripHeadsign,
-		}
-
-		batch.Queue(query, args)
+	tx, err := repo.db.Begin()
+	if err != nil {
+		return
 	}
+	defer tx.Rollback()
 
-	results := repo.pool.SendBatch(context.Background(), batch)
-
-	defer results.Close()
-	
-	for i, n := 0, batch.Len(); i < n ; i++ {
-		_, err = results.Exec()
-		if err != nil {
-			break 
-		}
-	} 
-
+	stmt, err := tx.Prepare(pq.CopyIn("trips","id", "service_id", "route_id", "shape_id", "trip_headsign"))
 	if err != nil {
 		return
 	}
 
-	return results.Close()
-	*/
-	return 
+	for _, t := range trips {	
+		
+		if _, err = stmt.Exec(t.ID,t.ServiceID,t.RouteID,t.ShapeID, t.TripHeadsign); err != nil {
+			return err
+		}
+	}
+
+	if _, err = stmt.Exec(); err != nil {
+		return
+	}
+
+	return tx.Commit()
 }
 
 func (repo *repository) IngestShapes(shapes []domain.Shape) (err error){
@@ -151,41 +126,29 @@ func (repo *repository) IngestShapes(shapes []domain.Shape) (err error){
 }
 
 func (repo *repository) IngestStopTimes(stopTimes []domain.StopTime) (err error){
-	/*
-	query := `INSERT INTO stoptimes (trip_id, stop_id, arrival, departure, stop_sequence) VALUES (@tripid, @stopid, @arrival, @departure, @sequence) ON CONFLICT (trip_id, stop_id) DO NOTHING`
-
-	batch := &pgx.Batch{}
-
-	for _, s := range stopTimes {
-
-		args := pgx.NamedArgs{
-			"tripid": s.TripID,
-			"stopid": s.StopID,
-			"arrival":s.Arrival,
-			"departure": s.Departure,
-			"sequence": s.StopSequence,
-		}
-
-		batch.Queue(query, args)
-		
+	tx, err := repo.db.Begin()
+	if err != nil {
+		return
 	}
+	defer tx.Rollback()
 
-	results := repo.pool.SendBatch(context.Background(), batch)
-
-	defer results.Close()
-	
-	for i, n := 0, batch.Len(); i < n ; i++ {
-		_, err = results.Exec()
-		if err != nil {
-			break 
-		}
-	} 
-
+	stmt, err := tx.Prepare(pq.CopyIn("stoptimes","trip_id", "stop_id", "arrival", "departure", "stop_sequence"))
 	if err != nil {
 		return
 	}
 
-	return results.Close()
-	*/
-	return
+	for _, st := range stopTimes {	
+		
+		if _, err = stmt.Exec(st.TripID, st.StopID, st.Arrival, st.Departure, st.StopSequence); err != nil {
+			return err
+		}
+	}
+
+	if _, err = stmt.Exec(); err != nil {
+		return
+	}
+
+	return tx.Commit()
 }
+
+

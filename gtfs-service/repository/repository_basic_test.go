@@ -80,6 +80,9 @@ func TestIngestRoutes(t *testing.T){
 
 	err = repo.IngestRoutes(routes)
 	assert.NoError(t, err)
+
+	dbRoutes, err :=  repo.FetchRoutes();
+	assert.Equal(t,len(data.Records), len(dbRoutes))
 }
 
 func TestIngestTrips(t *testing.T){
@@ -108,10 +111,12 @@ func TestIngestTrips(t *testing.T){
 
 	err = repo.IngestTrips(trips)
 	assert.NoError(t, err)
+
+	dbTrips, err :=  repo.FetchTrips();
+	assert.Equal(t,len(data.Records), len(dbTrips))
 }
 
 func TestIngestShapes(t *testing.T){
-	
 	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Error unzipping bytes from file: " + err.Error())
@@ -136,6 +141,9 @@ func TestIngestShapes(t *testing.T){
 
 	err = repo.IngestShapes(shapes)
 	assert.NoError(t, err)
+
+	dbShapes, err :=  repo.FetchShapes();
+	assert.Equal(t,4, len(dbShapes))
 }
 
 func TestIngestStopTimes(t *testing.T){
@@ -164,4 +172,8 @@ func TestIngestStopTimes(t *testing.T){
 
 	err = repo.IngestStopTimes(stoptimes)
 	assert.NoError(t, err)
+
+	dbStopTimes, err :=  repo.FetchStopTimes();
+	assert.NoError(t, err)
+	assert.Equal(t,len(data.Records), len(dbStopTimes))
 }
