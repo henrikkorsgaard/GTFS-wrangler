@@ -6,6 +6,33 @@ import (
 	"github.com/twpayne/go-geom/encoding/ewkb"
 )
 
+
+func (repo *repository) FetchAgency() (agency []domain.Agency, err error){
+	rows, err := repo.db.Query("SELECT agency_id, agency_name, agency_url, agency_timezone, agency_lang, agency_phone, agency_fare_url, agency_email FROM agency;")
+	defer rows.Close()
+
+	if err != nil {
+		return
+	}
+	
+	for rows.Next() {
+		a := domain.Agency{}
+	
+		err = rows.Scan(&a.ID, &a.Name, &a.URL, &a.Timezone, &a.Lang, &a.Phone, &a.FareURL, &a.Email)
+		if err != nil {
+			break
+		}
+	
+		agency = append(agency, a)
+	}
+
+	if rows.Err() != nil {
+		return 
+	}
+
+	return
+}
+
 func (repo *repository) FetchStops() (stops []domain.Stop, err error){
 	rows, err := repo.db.Query("SELECT id, name, description, parent_station, ST_AsBinary(geo_point) FROM stops;")
 	defer rows.Close()

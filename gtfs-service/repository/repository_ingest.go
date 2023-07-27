@@ -1,16 +1,38 @@
 package repository
 
-import (
-	/*
-	"context"
-	
-	"github.com/twpayne/go-geom/encoding/wkb"
-	*/
-	
+import (	
 	"henrikkorsgaard.dk/gtfs-service/domain"
 	"github.com/lib/pq"
 	"github.com/twpayne/go-geom/encoding/ewkbhex"
 )
+
+func (repo *repository) IngestAgency(agency []domain.Agency) (err error) {
+	tx, err := repo.db.Begin()
+	if err != nil {
+		return
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.Prepare(pq.CopyIn("agency","agency_id", "agency_name", "agency_url", "agency_timezone", "agency_lang", "agency_phone", "agency_fare_url", "agency_email"))
+	if err != nil {
+		return
+	}
+
+	for _, a := range agency {	
+		
+		_, err = stmt.Exec(&a.ID, &a.Name,&a.URL, &a.Timezone,&a.Lang, &a.Phone, &a.FareURL,&a.Email)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if _, err = stmt.Exec(); err != nil {
+		return
+	}
+
+	return tx.Commit()
+}
 
 func (repo *repository) IngestStops(stops []domain.Stop) (err error){
 	tx, err := repo.db.Begin()
@@ -40,7 +62,6 @@ func (repo *repository) IngestStops(stops []domain.Stop) (err error){
 	}
 
 	return tx.Commit()
-	
 }
 
 func (repo *repository) IngestRoutes(routes []domain.Route) (err error){

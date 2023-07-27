@@ -45,14 +45,6 @@ type GTFS struct {
 	Attributions 	[]Attribution	`csv:"attributions.txt" required:"false"`
 }
 
-
-/*
-	TODO
-		- make ints and doubles the proper type
-		- handle enums with enum int 
-		- add json annotation for front end parsing?
-*/ 
-
 // Spec: https://developers.google.com/transit/gtfs/reference#attributionstxt
 type Agency struct {
 	ID			string `csv:"agency_id" required:"true"`

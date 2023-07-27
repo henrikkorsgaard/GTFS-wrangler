@@ -22,6 +22,37 @@ func init(){
 	}
 }
 
+func TestIngestFetchAgency(t *testing.T){
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
+	if err != nil {
+		t.Error("Error unzipping bytes from file: " + err.Error())
+	}
+
+	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
+	if err != nil {
+		t.Error("Error TestIngestStops!")
+	}
+
+	data := gtfsFiles[0]
+	agency, err := ingest.UnmarshallAgency(data.Header, data.Records)
+	if err != nil {
+		t.Error("Error TestIngestAgency: " + err.Error())
+	}
+
+	// Singleton, so we will get the same each time anyways!
+	repo, err := NewRepository()
+
+	if err != nil {
+		t.Error("Error TestIngestAgency: " + err.Error())
+	}
+
+	err = repo.IngestAgency(agency)
+	assert.NoError(t, err)
+
+	dbAgency, err :=  repo.FetchAgency();
+	assert.Equal(t,len(data.Records), len(dbAgency))
+}
+
 func TestIngestFetchStops(t *testing.T){
 	
 	zbytes, err := testutils.GetBytesFromZipFile(testDataString)

@@ -1,8 +1,23 @@
+drop table if exists agency;
 drop table if exists stops;
 drop table if exists trips;
 drop table if exists routes;
 drop table if exists shapes;
 drop table if exists stoptimes;
+
+CREATE TABLE IF NOT EXISTS agency (
+  agency_id TEXT PRIMARY KEY,
+  agency_name TEXT NOT NULL,
+  agency_url TEXT NOT NULL, 
+  agency_timezone TEXT NOT NUll,
+  /* https://github.com/public-transport/gtfs-via-postgres/blob/main/lib/agency.js 
+    Suggest there might be an issue with timezones that needs to be accounted for, e.g. when the timezone of the data does not match the timezone of the database, then there will be a conflict.
+  */
+  agency_lang TEXT,
+  agency_phone TEXT,
+  agency_fare_url TEXT,
+  agency_email TEXT
+);
 
 CREATE TABLE IF NOT EXISTS stops (
   id varchar primary key,

@@ -90,8 +90,8 @@ func ParseZipIntoFiles (zbytes []byte) (files []CSVFile, err error){
 	return 
 }
 
-func UnmarshallAgencies(header []string, rows[][]string) (agencies []domain.Agency, err error) {
-	err = unmarshalSlice(header, rows, &agencies)
+func UnmarshallAgency(header []string, rows[][]string) (agency []domain.Agency, err error) {
+	err = unmarshalSlice(header, rows, &agency)
 	return  
 }
 

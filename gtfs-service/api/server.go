@@ -1,4 +1,9 @@
 package api
+
+// We want a traditional rest api
+// we want a GraphQL approach
+// .... and we want a SQL based approach inspired by the GraphQL approach
+
 /*
 
  
