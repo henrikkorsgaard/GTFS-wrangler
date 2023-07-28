@@ -66,7 +66,7 @@ type Stop struct {
 	GeoPoint geom.Point // I could use wbk.Point, but that is for encoding/decoding primarily. Until I know more I stick witht he more basic geom.Point
 	Lat					float64 `csv:"stop_lat" required:"true"`
 	Lon    				float64 `csv:"stop_lon" required:"true"`
-	ZoneId				string `csv:"zone_id" required:"false"`   // only required if having fare_rules.txt in the dataset. We need some way of validating that.
+	ZoneID				string `csv:"zone_id" required:"false"`   // only required if having fare_rules.txt in the dataset. We need some way of validating that.
 	URL 				string `csv:"stop_url" required:"false"`
 	LocationType 		string `csv:"location_type" required:"false"`
 	ParentStation		string `csv:"parent_station" required:"true"`

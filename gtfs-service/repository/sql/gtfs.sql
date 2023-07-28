@@ -20,11 +20,20 @@ CREATE TABLE IF NOT EXISTS agency (
 );
 
 CREATE TABLE IF NOT EXISTS stops (
-  id varchar primary key,
-  name varchar not null,
-  description varchar,
-  geo_point geography(point, 4326) not null,
-  parent_station varchar not null
+  id TEXT PRIMARY KEY,
+  stop_code TEXT,
+  stop_name TEXT NOT NULL,
+  stop_desc TEXT,
+  stop_loc geography(point, 4326) NOT NULL,
+  zone_id TEXT,
+  stop_url TEXT,
+  location_type TEXT,
+  /* we can use the same enum technique from https://github.com/public-transport/gtfs-via-postgres/blob/main/lib/stops.js */
+  parent_station TEXT NOT NULL,
+  stop_timezone TEXT, 
+  wheelchair_boarding TEXT,
+  level_id TEXT,
+  platform_code TEXT
 );
 
 CREATE TABLE IF NOT EXISTS routes (

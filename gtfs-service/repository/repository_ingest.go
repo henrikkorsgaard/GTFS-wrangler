@@ -41,7 +41,7 @@ func (repo *repository) IngestStops(stops []domain.Stop) (err error){
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.Prepare(pq.CopyIn("stops","id", "name", "description", "geo_point", "parent_station"))
+	stmt, err := tx.Prepare(pq.CopyIn("stops","id","stop_code", "stop_name","stop_desc","stop_loc","zone_id","stop_url", "location_type","parent_station","stop_timezone","wheelchair_boarding", "level_id", "platform_code"))
 	if err != nil {
 		return
 	}
@@ -52,7 +52,7 @@ func (repo *repository) IngestStops(stops []domain.Stop) (err error){
 			return err
 		}
 
-		if _, err = stmt.Exec(s.ID, s.Name, s.Description, ewkbhexGeom, s.ParentStation); err != nil {
+		if _, err = stmt.Exec(&s.ID, &s.Code, &s.Name, &s.Description,ewkbhexGeom, &s.ZoneID,&s.URL, &s.LocationType, &s.ParentStation, &s.Timezone, &s.WheelchairBoarding,&s.LevelID, &s.PlatformCode); err != nil {
 			return err
 		}
 	}

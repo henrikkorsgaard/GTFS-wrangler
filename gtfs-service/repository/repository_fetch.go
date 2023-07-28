@@ -34,7 +34,7 @@ func (repo *repository) FetchAgency() (agency []domain.Agency, err error){
 }
 
 func (repo *repository) FetchStops() (stops []domain.Stop, err error){
-	rows, err := repo.db.Query("SELECT id, name, description, parent_station, ST_AsBinary(geo_point) FROM stops;")
+	rows, err := repo.db.Query("SELECT id, stop_code, stop_name, stop_desc, ST_AsBinary(stop_loc), zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding, level_id, platform_code FROM stops;")
 	defer rows.Close()
 
 	if err != nil {
@@ -44,7 +44,7 @@ func (repo *repository) FetchStops() (stops []domain.Stop, err error){
 	for rows.Next() {
 		s := domain.Stop{}
 		var p ewkb.Point
-		err = rows.Scan(&s.ID, &s.Name, &s.Description,&s.ParentStation, &p)
+		err = rows.Scan(&s.ID, &s.Code, &s.Name, &s.Description,&p, &s.ZoneID,&s.URL, &s.LocationType, &s.ParentStation, &s.Timezone, &s.WheelchairBoarding,&s.LevelID, &s.PlatformCode)
 		if err != nil {
 			break
 		}
