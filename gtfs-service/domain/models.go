@@ -78,18 +78,18 @@ type Stop struct {
 
 // Spec: https://developers.google.com/transit/gtfs/reference#routestxt
 type Route struct {
-	ID       	string `csv:"route_id" required:"true"`
-	AgencyID	string `csv:"agency_id" required:"true"`
-	Name		string `csv:"route_short_name" required:"true"`
-	LongName	string `csv:"route_long_name" required:"true"`
-	Description	string `csv:"route_desc" required:"false"`
-	Type 		string `csv:"route_type" required:"true"`
-	URL			string `csv:"route_url" required:"false"`
-	Color		string `csv:"route_color" required:"false"`
-	TextColor	string `csv:"route_text_color" required:"false"`
-	SortOrder	string `csv:"route_sort_order" required:"false"`
-	ContPickup	string `csv:"continuous_pickup" required:"false"`
-	ContDrop	string `csv:"continuous_drop_off" required:"false"`
+	ID       	string 	`csv:"route_id" required:"true"`
+	AgencyID	string 	`csv:"agency_id" required:"true"`
+	Name		string 	`csv:"route_short_name" required:"true"`
+	LongName	string 	`csv:"route_long_name" required:"true"`
+	Description	string 	`csv:"route_desc" required:"false"`
+	Type 		string 	`csv:"route_type" required:"true"`
+	URL			string 	`csv:"route_url" required:"false"`
+	Color		string 	`csv:"route_color" required:"false"`
+	TextColor	string 	`csv:"route_text_color" required:"false"`
+	SortOrder	int 	`csv:"route_sort_order" required:"false"`
+	ContPickup	string 	`csv:"continuous_pickup" required:"false"`
+	ContDrop	string 	`csv:"continuous_drop_off" required:"false"`
 }
 
 // Spec: https://developers.google.com/transit/gtfs/reference#tripstxt

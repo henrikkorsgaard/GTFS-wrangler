@@ -13,7 +13,7 @@ func (repo *repository) IngestAgency(agency []domain.Agency) (err error) {
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.Prepare(pq.CopyIn("agency","agency_id", "agency_name", "agency_url", "agency_timezone", "agency_lang", "agency_phone", "agency_fare_url", "agency_email"))
+	stmt, err := tx.Prepare(pq.CopyIn("agency","id", "name", "url", "timezone", "lang", "phone", "fare_url", "email"))
 	if err != nil {
 		return
 	}
@@ -41,7 +41,7 @@ func (repo *repository) IngestStops(stops []domain.Stop) (err error){
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.Prepare(pq.CopyIn("stops","id","stop_code", "stop_name","stop_desc","stop_loc","zone_id","stop_url", "location_type","parent_station","stop_timezone","wheelchair_boarding", "level_id", "platform_code"))
+	stmt, err := tx.Prepare(pq.CopyIn("stops","id","code", "name","description","location","zone_id","url", "location_type","parent_station","timezone","wheelchair_boarding", "level_id", "platform_code"))
 	if err != nil {
 		return
 	}
@@ -71,14 +71,14 @@ func (repo *repository) IngestRoutes(routes []domain.Route) (err error){
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.Prepare(pq.CopyIn("routes","id", "agency_id", "short_name", "long_name", "type"))
+	stmt, err := tx.Prepare(pq.CopyIn("routes","id", "agency_id", "short_name", "long_name", "description","type", "url","color","text_color","sort_order","continuous_pickup", "continuous_drop_off"))
 	if err != nil {
 		return
 	}
 
 	for _, r := range routes {	
 		
-		if _, err = stmt.Exec(r.ID, r.AgencyID, r.Name, r.LongName, r.Type); err != nil {
+		if _, err = stmt.Exec(r.ID, r.AgencyID, r.Name, r.LongName, r.Description, r.Type, r.URL, r.Color, r.TextColor, r.SortOrder, r.ContPickup, r.ContDrop); err != nil {
 			return err
 		}
 	}
