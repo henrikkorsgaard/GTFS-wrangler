@@ -1,6 +1,6 @@
 package repository
 
-import (	
+import (
 	"henrikkorsgaard.dk/gtfs-service/domain"
 	"github.com/lib/pq"
 	"github.com/twpayne/go-geom/encoding/ewkbhex"
@@ -97,14 +97,14 @@ func (repo *repository) IngestTrips(trips []domain.Trip) (err error){
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.Prepare(pq.CopyIn("trips","id", "service_id", "route_id", "shape_id", "trip_headsign"))
+	stmt, err := tx.Prepare(pq.CopyIn("trips","id","route_id", "service_id", "shape_id", "headsign", "name","wheelchair_accessible", "bikes_allowed"))
 	if err != nil {
 		return
 	}
 
 	for _, t := range trips {	
 		
-		if _, err = stmt.Exec(t.ID,t.ServiceID,t.RouteID,t.ShapeID, t.TripHeadsign); err != nil {
+		if _, err = stmt.Exec(t.ID,t.RouteID,t.ServiceID, t.ShapeID, t.Headsign, t.Name, t.WheelchairAccessible,t.BikesAllowed); err != nil {
 			return err
 		}
 	}

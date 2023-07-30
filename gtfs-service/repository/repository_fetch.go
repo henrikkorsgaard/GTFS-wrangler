@@ -86,7 +86,7 @@ func (repo *repository) FetchRoutes() (routes []domain.Route, err error){
 }
 
 func (repo *repository) FetchTrips() (trips []domain.Trip, err error){
-	rows, err := repo.db.Query("SELECT id, service_id, route_id, shape_id, trip_headsign FROM trips;")
+	rows, err := repo.db.Query("SELECT id, route_id, service_id, shape_id, headsign, name, block_id, wheelchair_accessible, bikes_allowed FROM trips;")
 	defer rows.Close()
 	
 	if err != nil {
@@ -96,8 +96,9 @@ func (repo *repository) FetchTrips() (trips []domain.Trip, err error){
 	for rows.Next() {
 		t := domain.Trip{}
 		
-		err = rows.Scan(&t.ID, &t.ServiceID, &t.RouteID, &t.ShapeID, &t.TripHeadsign)
+		err = rows.Scan(&t.ID, &t.RouteID,&t.ServiceID,&t.ShapeID, &t.Headsign, &t.Name, &t.BlockID, &t.WheelchairAccessible, &t.BikesAllowed)
 		if err != nil {
+			fmt.Println(err)
 			break
 		}
 		

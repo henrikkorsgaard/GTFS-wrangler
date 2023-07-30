@@ -52,11 +52,15 @@ CREATE TABLE IF NOT EXISTS routes (
 );
 
 CREATE TABLE IF NOT EXISTS trips (
-  id integer primary key, 
-  service_id varchar not null, 
-  route_id varchar not null,
-  shape_id integer not null,
-  trip_headsign varchar
+  id TEXT PRIMARY KEY, 
+  route_id TEXT NOT NULL,
+  service_id TEXT NOT NULL,  
+  shape_id TEXT NOT NULL, 
+  headsign TEXT,
+  name TEXT,
+  block_id TEXT,
+  wheelchair_accessible TEXT,
+  bikes_allowed TEXT
 );
 
 CREATE TABLE IF NOT EXISTS shapes (

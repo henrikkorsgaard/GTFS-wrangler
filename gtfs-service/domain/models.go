@@ -14,7 +14,34 @@ package domain
 
 import (
 	"github.com/twpayne/go-geom"	
+	"database/sql/driver"
+    "errors"
 )
+
+// Solution for the sql null string issue with golang. https://medium.com/@raymondhartoyo/one-simple-way-to-handle-null-database-value-in-golang-86437ec75089
+type NullString string 
+
+// custom scanner for the null value fields. Should be implemented for all the potential null string values
+// alternative is to implement a scanner for each model
+func (s *NullString) Scan(value interface{}) error {
+    if value == nil {
+        *s = ""
+        return nil
+    }
+    strVal, ok := value.(string)
+    if !ok {
+        return errors.New("Column is not a string")
+    }
+    *s = NullString(strVal)
+    return nil
+}
+
+func (s NullString) Value() (driver.Value, error) {
+    if len(s) == 0 { // if nil or empty string
+        return nil, nil
+    }
+    return string(s), nil
+}
 
 type LoadProgress struct {
 	Filename	string
@@ -97,10 +124,10 @@ type Trip struct {
 	RouteID					string `csv:"route_id" required:"true"`
 	ServiceID				string `csv:"service_id" required:"true"`
 	ID						string `csv:"trip_id" required:"true"`
-	TripHeadsign			string `csv:"trip_headsign" required:"false"`
+	Headsign				string `csv:"trip_headsign" required:"false"`
 	Name					string `csv:"trip_short_name" required:"false"`
 	DirectionID 			string `csv:"direction_id" required:"false"`
-	BlockID					string `csv:"block_id" required:"false"`
+	BlockID					NullString `csv:"block_id" required:"false"`
 	ShapeID					string `csv:"shape_id" required:"true"`
 	WheelchairAccessible	string `csv:"wheelchair_accessible" required:"false"`
 	BikesAllowed			string `csv:"bikes_allowed" required:"false"`
