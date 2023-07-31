@@ -63,17 +63,28 @@ CREATE TABLE IF NOT EXISTS trips (
   bikes_allowed TEXT
 );
 
+CREATE TABLE IF NOT EXISTS stoptimes (
+  trip_id TEXT,
+  stop_id TEXT,
+  arrival TIME NOT NULL,
+  departure TIME NOT NULL,
+  stop_sequence TEXT NOT NULL,
+  stop_headsign TEXT,
+  pickup_type TEXT,
+  drop_off_type TEXT,
+  continuous_pickup TEXT,
+  continuous_drop_off TEXT,
+  shape_dist_traveled TEXT,
+  timepoint TEXT,
+  PRIMARY KEY (trip_id, stop_id)
+);
+
+/* Hertil */
+
 CREATE TABLE IF NOT EXISTS shapes (
   id integer primary key,
   geo_line geography(linestring,4326) not null
 );
 
-CREATE TABLE IF NOT EXISTS stoptimes (
-  trip_id integer,
-  stop_id varchar,
-  arrival time not null,
-  departure time not null,
-  stop_sequence varchar not null,
-  PRIMARY KEY (trip_id, stop_id)
-);
+
 

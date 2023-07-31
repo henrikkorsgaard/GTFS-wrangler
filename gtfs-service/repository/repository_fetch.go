@@ -95,7 +95,7 @@ func (repo *repository) FetchTrips() (trips []domain.Trip, err error){
 
 	for rows.Next() {
 		t := domain.Trip{}
-		
+		// This is a larger thing I need to solve. 
 		err = rows.Scan(&t.ID, &t.RouteID,&t.ServiceID,&t.ShapeID, &t.Headsign, &t.Name, &t.BlockID, &t.WheelchairAccessible, &t.BikesAllowed)
 		if err != nil {
 			fmt.Println(err)
@@ -141,19 +141,20 @@ func (repo *repository) FetchShapes() (shapes []domain.Shape, err error){
 }
 
 func (repo *repository) FetchStopTimes() (stopTimes []domain.StopTime, err error){
-	rows, err := repo.db.Query("SELECT trip_id, stop_id, arrival, departure FROM stoptimes;")
+	rows, err := repo.db.Query("SELECT trip_id, stop_id, arrival, departure, stop_sequence, stop_headsign, pickup_type, drop_off_type, continuous_pickup, continuous_drop_off, shape_dist_traveled, timepoint FROM stoptimes;")
 	defer rows.Close()
 	
 	if err != nil {
+		fmt.Println("ddsadas")
 		return
 	}
 
 	for rows.Next() {
 		st := domain.StopTime{}
 		
-		err = rows.Scan(&st.TripID, &st.StopID, &st.Arrival, &st.Departure)
+		err = rows.Scan(&st.TripID, &st.StopID, &st.Arrival, &st.Departure, &st.StopSequence, &st.StopHeadsign, &st.Pickup, &st.Dropoff, &st.ContPickup, &st.ContDrop, &st.DistanceTraveled, &st.Timepoint)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("jer")
 			break
 		}
 		
@@ -161,6 +162,7 @@ func (repo *repository) FetchStopTimes() (stopTimes []domain.StopTime, err error
 	}
 
 	if rows.Err() != nil {
+		fmt.Println("dklæjas")
 		return 
 	}
 

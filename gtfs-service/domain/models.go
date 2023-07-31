@@ -144,11 +144,10 @@ type StopTime struct {
 	StopHeadsign 		string `csv:"stop_headsign" required:"false"`
 	Pickup				string `csv:"pickup_type" required:"false"`
 	Dropoff				string `csv:"drop_off_type" required:"false"`
-	TextColor			string `csv:"route_text_color" required:"false"`
 	ContPickup			string `csv:"continuous_pickup" required:"false"`
 	ContDrop			string `csv:"continuous_drop_off" required:"false"`
-	DistanceTravelled	string `csv:"shape_dist_traveled" required:"false"`
-	TimePoint			string `csv:"timepoint" required:"false"`
+	DistanceTraveled	string `csv:"shape_dist_traveled" required:"false"`
+	Timepoint			string `csv:"timepoint" required:"false"`
 }
 
 // Spec: https://developers.google.com/transit/gtfs/reference#calendartxt

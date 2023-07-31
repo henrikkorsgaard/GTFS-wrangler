@@ -153,14 +153,14 @@ func (repo *repository) IngestStopTimes(stopTimes []domain.StopTime) (err error)
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.Prepare(pq.CopyIn("stoptimes","trip_id", "stop_id", "arrival", "departure", "stop_sequence"))
+	stmt, err := tx.Prepare(pq.CopyIn("stoptimes","trip_id", "stop_id", "arrival", "departure", "stop_sequence", "stop_headsign", "pickup_type","drop_off_type","continuous_pickup", "continuous_drop_off", "shape_dist_traveled", "timepoint"))
 	if err != nil {
 		return
 	}
 
 	for _, st := range stopTimes {	
 		
-		if _, err = stmt.Exec(st.TripID, st.StopID, st.Arrival, st.Departure, st.StopSequence); err != nil {
+		if _, err = stmt.Exec(st.TripID, st.StopID, st.Arrival, st.Departure, st.StopSequence, st.StopHeadsign, st.Pickup, st.Dropoff,st.ContPickup,st.ContDrop, st.DistanceTraveled, st.Timepoint); err != nil {
 			return err
 		}
 	}
