@@ -1,171 +1,161 @@
 package repository
 
 import (
-	"fmt"
+	"database/sql"
 	"henrikkorsgaard.dk/gtfs-service/domain"
 	"github.com/twpayne/go-geom/encoding/ewkb"
 )
 
 
 func (repo *repository) FetchAgency() (agency []domain.Agency, err error){
-	rows, err := repo.db.Query("SELECT id, name, url, timezone, lang, phone, fare_url, email FROM agency;")
-	defer rows.Close()
-
-	if err != nil {
-		return
-	}
+	query := "SELECT id, name, url, timezone, lang, phone, fare_url, email FROM agency;"
 	
-	for rows.Next() {
+	rowHandler := func(rs *sql.Rows) (err error){
+		
 		a := domain.Agency{}
 	
-		err = rows.Scan(&a.ID, &a.Name, &a.URL, &a.Timezone, &a.Lang, &a.Phone, &a.FareURL, &a.Email)
+		err = rs.Scan(&a.ID, &a.Name, &a.URL, &a.Timezone, &a.Lang, &a.Phone, &a.FareURL, &a.Email)
 		if err != nil {
-			break
+			return
 		}
 	
 		agency = append(agency, a)
+		return
 	}
 
-	if rows.Err() != nil {
-		return 
-	}
+	err = repo.fetch(query, rowHandler)
 
 	return
 }
 
 func (repo *repository) FetchStops() (stops []domain.Stop, err error){
-	rows, err := repo.db.Query("SELECT id, code, name, description, ST_AsBinary(location), zone_id, url, location_type, parent_station, timezone, wheelchair_boarding, level_id, platform_code FROM stops;")
-	defer rows.Close()
-
-	if err != nil {
-		return
-	}
+	query := "SELECT id, code, name, description, ST_AsBinary(location), zone_id, url, location_type, parent_station, timezone, wheelchair_boarding, level_id, platform_code FROM stops;"
 	
-	for rows.Next() {
+	rowHandler := func(rs *sql.Rows) (err error){
+		
 		s := domain.Stop{}
 		var p ewkb.Point
-		err = rows.Scan(&s.ID, &s.Code, &s.Name, &s.Description,&p, &s.ZoneID,&s.URL, &s.LocationType, &s.ParentStation, &s.Timezone, &s.WheelchairBoarding,&s.LevelID, &s.PlatformCode)
+		
+		err = rs.Scan(&s.ID, &s.Code, &s.Name, &s.Description,&p, &s.ZoneID,&s.URL, &s.LocationType, &s.ParentStation, &s.Timezone, &s.WheelchairBoarding,&s.LevelID, &s.PlatformCode)
 		if err != nil {
-			break
+			return 
 		}
+
 		s.GeoPoint = *p.Point
 		stops = append(stops, s)
+		return
 	}
 
-	if rows.Err() != nil {
-		return 
-	}
+	err = repo.fetch(query, rowHandler)
 
 	return
 }
 
 func (repo *repository) FetchRoutes() (routes []domain.Route, err error){
-	rows, err := repo.db.Query("SELECT id, agency_id, short_name, long_name, description,  type, url, color, text_color, sort_order, continuous_pickup, continuous_drop_off FROM routes;")
-	defer rows.Close()
+	query := "SELECT id, agency_id, short_name, long_name, description,  type, url, color, text_color, sort_order, continuous_pickup, continuous_drop_off FROM routes;"
 
-	if err != nil {
-		return
-	}
-	
-	for rows.Next() {
+	rowHandler := func(rs *sql.Rows) (err error){
 		r := domain.Route{}
 		
-		err = rows.Scan(&r.ID, &r.AgencyID, &r.Name, &r.LongName, &r.Description,&r.Type,&r.URL, &r.Color, &r.TextColor, &r.SortOrder, &r.ContPickup, &r.ContDrop)
+		err = rs.Scan(&r.ID, &r.AgencyID, &r.Name, &r.LongName, &r.Description,&r.Type,&r.URL, &r.Color, &r.TextColor, &r.SortOrder, &r.ContPickup, &r.ContDrop)
 		if err != nil {
-			break
+			return
 		}
 		
 		routes = append(routes, r)
+
+		return
 	}
 
-	if rows.Err() != nil {
-		return 
-	}
+	err = repo.fetch(query, rowHandler)
 
 	return
 }
 
 func (repo *repository) FetchTrips() (trips []domain.Trip, err error){
-	rows, err := repo.db.Query("SELECT id, route_id, service_id, shape_id, headsign, name, block_id, wheelchair_accessible, bikes_allowed FROM trips;")
-	defer rows.Close()
-	
-	if err != nil {
+	query := "SELECT id, route_id, service_id, shape_id, headsign, name, block_id, wheelchair_accessible, bikes_allowed FROM trips;"
+
+	rowHandler := func(rs *sql.Rows) (err error){
+		t := domain.Trip{}
+		err = rs.Scan(&t.ID, &t.RouteID,&t.ServiceID,&t.ShapeID, &t.Headsign, &t.Name, &t.BlockID, &t.WheelchairAccessible, &t.BikesAllowed)
+		
+		if err != nil {
+			return
+		}
+
+		trips = append(trips, t)
+
 		return
 	}
 
-	for rows.Next() {
-		t := domain.Trip{}
-		// This is a larger thing I need to solve. 
-		err = rows.Scan(&t.ID, &t.RouteID,&t.ServiceID,&t.ShapeID, &t.Headsign, &t.Name, &t.BlockID, &t.WheelchairAccessible, &t.BikesAllowed)
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-		
-		trips = append(trips, t)
-	}
-
-	if rows.Err() != nil {
-		return 
-	}
+	err = repo.fetch(query, rowHandler)
 
 	return
 }
 
 func (repo *repository) FetchShapes() (shapes []domain.Shape, err error){
-	rows, err := repo.db.Query("SELECT id, ST_AsBinary(geo_line) FROM shapes;")
-	defer rows.Close()
 
-	if err != nil {
-		return
-	}
+	query := "SELECT id, ST_AsBinary(geo_line) FROM shapes;"
 
-	for rows.Next() {
-		
+	rowHandler := func(rs *sql.Rows) (err error){
 		s := domain.Shape{}
 		var ls ewkb.LineString
-		err = rows.Scan(&s.ID, &ls)
+		err = rs.Scan(&s.ID, &ls)
+		
 		if err != nil {
-			break
+			return
 		}
 
 		s.GeoLineString = *ls.LineString
 		shapes = append(shapes, s)
+		
+		return
 	}
 
-	if rows.Err() != nil {
-		return 
-	}
+	err = repo.fetch(query, rowHandler)
 
 	return
 }
 
 func (repo *repository) FetchStopTimes() (stopTimes []domain.StopTime, err error){
-	rows, err := repo.db.Query("SELECT trip_id, stop_id, arrival, departure, stop_sequence, stop_headsign, pickup_type, drop_off_type, continuous_pickup, continuous_drop_off, shape_dist_traveled, timepoint FROM stoptimes;")
+	query := "SELECT trip_id, stop_id, arrival, departure, stop_sequence, stop_headsign, pickup_type, drop_off_type, continuous_pickup, continuous_drop_off, shape_dist_traveled, timepoint FROM stoptimes;"
+
+	rowHandler := func(rs *sql.Rows) (err error){
+		st := domain.StopTime{}
+		
+		err = rs.Scan(&st.TripID, &st.StopID, &st.Arrival, &st.Departure, &st.StopSequence, &st.StopHeadsign, &st.Pickup, &st.Dropoff, &st.ContPickup, &st.ContDrop, &st.DistanceTraveled, &st.Timepoint)
+		
+		if err != nil {
+			return
+		}
+
+		stopTimes = append(stopTimes, st)
+		return
+	}
+	
+	err = repo.fetch(query, rowHandler)
+
+	return
+}
+
+func (repo *repository) fetch(query string, rowHandler func(r *sql.Rows) (err error)) (err error) {
+	rows, err := repo.db.Query(query)
 	defer rows.Close()
 	
 	if err != nil {
-		fmt.Println("ddsadas")
 		return
 	}
 
 	for rows.Next() {
-		st := domain.StopTime{}
-		
-		err = rows.Scan(&st.TripID, &st.StopID, &st.Arrival, &st.Departure, &st.StopSequence, &st.StopHeadsign, &st.Pickup, &st.Dropoff, &st.ContPickup, &st.ContDrop, &st.DistanceTraveled, &st.Timepoint)
+		err = rowHandler(rows)
 		if err != nil {
-			fmt.Println("jer")
 			break
 		}
-		
-		stopTimes = append(stopTimes, st)
 	}
 
 	if rows.Err() != nil {
-		fmt.Println("dklæjas")
 		return 
 	}
 
 	return
 }
-
