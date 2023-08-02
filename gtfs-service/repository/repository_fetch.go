@@ -6,7 +6,6 @@ import (
 	"github.com/twpayne/go-geom/encoding/ewkb"
 )
 
-
 func (repo *repository) FetchAgency() (agency []domain.Agency, err error){
 	query := "SELECT id, name, url, timezone, lang, phone, fare_url, email FROM agency;"
 	
@@ -130,6 +129,27 @@ func (repo *repository) FetchStopTimes() (stopTimes []domain.StopTime, err error
 		}
 
 		stopTimes = append(stopTimes, st)
+		return
+	}
+	
+	err = repo.fetch(query, rowHandler)
+
+	return
+}
+
+func (repo *repository) FetchCalendars() (calendars []domain.Calendar, err error){
+	query := "SELECT service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date FROM calendar;"
+
+	rowHandler := func(rs *sql.Rows) (err error){
+		c := domain.Calendar{}
+		
+		err = rs.Scan(&c.ServiceID, &c.Monday, &c.Tuesday, &c.Wednesday, &c.Thursday, &c.Friday, &c.Saturday, &c.Sunday, &c.StartDate, &c.EndDate)
+		
+		if err != nil {
+			return
+		}
+
+		calendars = append(calendars, c)
 		return
 	}
 	

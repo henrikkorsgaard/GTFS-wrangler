@@ -4,6 +4,7 @@ drop table if exists trips;
 drop table if exists routes;
 drop table if exists shapes;
 drop table if exists stoptimes;
+drop table if exists calendar;
 
 CREATE TABLE IF NOT EXISTS agency (
   id TEXT PRIMARY KEY,
@@ -77,6 +78,19 @@ CREATE TABLE IF NOT EXISTS stoptimes (
   shape_dist_traveled TEXT,
   timepoint TEXT,
   PRIMARY KEY (trip_id, stop_id)
+);
+
+CREATE TABLE IF NOT EXISTS calendar (
+  service_id TEXT PRIMARY KEY, /*this is the foreign key as well -- check how to do this */
+  monday BOOLEAN NOT NULL, /* could be should be enum? Only have 2 states 1: service available for day: 0: service unavailable for day, see https://developers.google.com/transit/gtfs/reference#calendartxt*/
+  tuesday BOOLEAN NOT NULL,
+  wednesday BOOLEAN NOT NULL,
+  thursday BOOLEAN NOT NULL,
+  friday BOOLEAN NOT NULL,
+  saturday BOOLEAN NOT NULL,
+  sunday BOOLEAN NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL
 );
 
 /* Hertil */

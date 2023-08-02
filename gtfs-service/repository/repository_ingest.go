@@ -172,4 +172,29 @@ func (repo *repository) IngestStopTimes(stopTimes []domain.StopTime) (err error)
 	return tx.Commit()
 }
 
+func (repo *repository) IngestCalendars(calendars []domain.Calendar) (err error){
+	tx, err := repo.db.Begin()
+	if err != nil {
+		return
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.Prepare(pq.CopyIn("calendar","service_id", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday","sunday","start_date", "end_date"))
+	if err != nil {
+		return
+	}
+
+	for _, c := range calendars {	
+		
+		if _, err = stmt.Exec(c.ServiceID, c.Monday, c.Tuesday, c.Wednesday, c.Thursday, c.Friday, c.Saturday, c.Sunday, c.StartDate, c.EndDate); err != nil {
+			return err
+		}
+	}
+
+	if _, err = stmt.Exec(); err != nil {
+		return
+	}
+
+	return tx.Commit()
+}
 

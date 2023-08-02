@@ -25,25 +25,25 @@ func init(){
 func TestIngestFetchAgency(t *testing.T){
 	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
-		t.Error("Error unzipping bytes from file: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
 	if err != nil {
-		t.Error("Error TestIngestStops!")
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	data := gtfsFiles[0]
 	agency, err := ingest.UnmarshallAgency(data.Header, data.Records)
 	if err != nil {
-		t.Error("Error TestIngestAgency: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	// Singleton, so we will get the same each time anyways!
 	repo, err := NewRepository()
 
 	if err != nil {
-		t.Error("Error TestIngestAgency: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	err = repo.IngestAgency(agency)
@@ -57,25 +57,25 @@ func TestIngestFetchStops(t *testing.T){
 	
 	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
-		t.Error("Error unzipping bytes from file: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
 	if err != nil {
-		t.Error("Error TestIngestStops!")
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	data := gtfsFiles[7]
 	stops, err := ingest.UnmarshallStops(data.Header, data.Records)
 	if err != nil {
-		t.Error("Error TestIngestStops: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	// Singleton, so we will get the same each time anyways!
 	repo, err := NewRepository()
 
 	if err != nil {
-		t.Error("Error TestIngestStops: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	err = repo.IngestStops(stops)
@@ -86,27 +86,27 @@ func TestIngestFetchStops(t *testing.T){
 
 }
 
-func TestIngestRoutes(t *testing.T){
+func TestIngestFetchRoutes(t *testing.T){
 
 	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
-		t.Error("Error unzipping bytes from file: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
 	if err != nil {
-		t.Error("Error TestIngestRoutes!")
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	data := gtfsFiles[5]
 	routes, err := ingest.UnmarshallRoutes(data.Header, data.Records)
 	if err != nil {
-		t.Error("Error TestIngestRoutes: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	repo, err := NewRepository()
 	if err != nil {
-		t.Error("Error TestIngestRoutes: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	err = repo.IngestRoutes(routes)
@@ -116,28 +116,28 @@ func TestIngestRoutes(t *testing.T){
 	assert.Equal(t,len(data.Records), len(dbRoutes))
 }
 
-func TestIngestTrips(t *testing.T){
+func TestIngestFetchTrips(t *testing.T){
 	
 	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
-		t.Error("Error unzipping bytes from file: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
 	if err != nil {
-		t.Error("Error TestIngestTrips!")
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	data := gtfsFiles[10]
 	trips, err := ingest.UnmarshallTrips(data.Header, data.Records)
 	if err != nil {
-		t.Error("Error TestIngestTrips: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	repo, err := NewRepository()
 
 	if err != nil {
-		t.Error("Error TestIngestTrips: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	err = repo.IngestTrips(trips)
@@ -150,24 +150,24 @@ func TestIngestTrips(t *testing.T){
 func TestIngestShapes(t *testing.T){
 	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
-		t.Error("Error unzipping bytes from file: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
 	if err != nil {
-		t.Error("Error TestIngestShapes!")
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	data := gtfsFiles[6]
 	shapes, err := ingest.UnmarshallShapes(data.Header, data.Records)
 	if err != nil {
-		t.Error("Error TestIngestShapes: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	repo, err := NewRepository()
 
 	if err != nil {
-		t.Error("Error TestIngestShapes: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	err = repo.IngestShapes(shapes)
@@ -177,28 +177,28 @@ func TestIngestShapes(t *testing.T){
 	assert.Equal(t,4, len(dbShapes))
 }
 
-func TestIngestStopTimes(t *testing.T){
+func TestIngestFetchStopTimes(t *testing.T){
 	
 	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
-		t.Error("Error unzipping bytes from file: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
 	if err != nil {
-		t.Error("Error TestStopTimes!")
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	data := gtfsFiles[8]
 	stoptimes, err := ingest.UnmarshallStopTimes(data.Header, data.Records)
 	if err != nil {
-		t.Error("Error TestStopTimes: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	repo, err := NewRepository()
 	
 	if err != nil {
-		t.Error("Error TestStopTimes: " + err.Error())
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
 	}
 
 	err = repo.IngestStopTimes(stoptimes)
@@ -207,4 +207,37 @@ func TestIngestStopTimes(t *testing.T){
 	dbStopTimes, err :=  repo.FetchStopTimes();
 	assert.NoError(t, err)
 	assert.Equal(t,len(data.Records), len(dbStopTimes))
+}
+
+
+func TestIngestFetchCalendar(t *testing.T){
+
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
+	if err != nil {
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
+	}
+
+	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
+	if err != nil {
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
+	}
+
+	data := gtfsFiles[2]
+	calendar, err := ingest.UnmarshallCalendar(data.Header, data.Records)
+	if err != nil {
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
+	}
+
+	repo, err := NewRepository()
+	
+	if err != nil {
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
+	}
+
+	err = repo.IngestCalendars(calendar)
+	assert.NoError(t, err)
+
+	dbCalendar, err :=  repo.FetchCalendars();
+	assert.NoError(t, err)
+	assert.Equal(t,len(data.Records), len(dbCalendar))
 }
