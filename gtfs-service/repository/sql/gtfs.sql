@@ -32,7 +32,6 @@ CREATE TABLE IF NOT EXISTS stops (
   zone_id TEXT,
   url TEXT,
   location_type TEXT,
-  /* we can use the same enum technique from https://github.com/public-transport/gtfs-via-postgres/blob/main/lib/stops.js */
   parent_station TEXT NOT NULL,
   timezone TEXT, 
   wheelchair_boarding TEXT,
@@ -85,7 +84,7 @@ CREATE TABLE IF NOT EXISTS stoptimes (
 
 CREATE TABLE IF NOT EXISTS calendar (
   service_id TEXT PRIMARY KEY, /*this is the foreign key as well -- check how to do this */
-  monday BOOLEAN NOT NULL, /* could be should be enum? Only have 2 states 1: service available for day: 0: service unavailable for day, see https://developers.google.com/transit/gtfs/reference#calendartxt*/
+  monday BOOLEAN NOT NULL,
   tuesday BOOLEAN NOT NULL,
   wednesday BOOLEAN NOT NULL,
   thursday BOOLEAN NOT NULL,
