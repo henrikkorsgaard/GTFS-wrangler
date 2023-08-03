@@ -48,7 +48,7 @@ There are a couple of useful GTFS libraries and implementations out there. I hav
 #### [GO GTFS](https://github.com/artonge/go-gtfs):
 This Golang library loads GTFS files from a directory into one GFTS struct. It is currently in maintenance mode. I have modified parts of the [mapToDestination](https://github.com/artonge/go-csv-tag/blob/4b40f225e91a009021bac2ae6fd04a3d90c58b12/load.go#L142) function and use the [storeValue](https://github.com/artonge/go-csv-tag/blob/4b40f225e91a009021bac2ae6fd04a3d90c58b12/load.go#L194) function in my code. 
 
-TODO: This means I need to use GPL v3 license.
+This project is licensed under GPL-3.0 because I have taken inspiration from and use code from this library.
 
 #### [GTFS via postgres](https://github.com/public-transport/gtfs-via-postgres)
 This NodeJS cli tool loads GTFS files from a directory into a PostgreSQL database. You can query the data using SQL and/or (with the right config) use it in connection with [PostGraphile](https://www.graphile.org/postgraphile/) to get a GraphQL interface (neat!).
