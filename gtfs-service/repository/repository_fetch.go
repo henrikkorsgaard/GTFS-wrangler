@@ -158,6 +158,27 @@ func (repo *repository) FetchCalendars() (calendars []domain.Calendar, err error
 	return
 }
 
+func (repo *repository) FetchCalendarDates() (calendarDates []domain.CalendarDate, err error){
+	query := "SELECT service_id, date, exception_type FROM calendar_dates;"
+
+	rowHandler := func(rs *sql.Rows) (err error){
+		cd := domain.CalendarDate{}
+		
+		err = rs.Scan(&cd.ServiceID, &cd.Date, &cd.Exception)
+		
+		if err != nil {
+			return
+		}
+
+		calendarDates = append(calendarDates, cd)
+		return
+	}
+	
+	err = repo.fetch(query, rowHandler)
+
+	return
+}
+
 func (repo *repository) fetch(query string, rowHandler func(r *sql.Rows) (err error)) (err error) {
 	rows, err := repo.db.Query(query)
 	defer rows.Close()

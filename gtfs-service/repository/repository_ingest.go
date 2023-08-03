@@ -198,3 +198,29 @@ func (repo *repository) IngestCalendars(calendars []domain.Calendar) (err error)
 	return tx.Commit()
 }
 
+func (repo *repository) IngestCalendarDates(calendarDates []domain.CalendarDate) (err error){
+	tx, err := repo.db.Begin()
+	if err != nil {
+		return
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.Prepare(pq.CopyIn("calendar_dates","service_id", "date","exception_type"))
+	if err != nil {
+		return
+	}
+
+	for _, cd := range calendarDates {	
+		
+		if _, err = stmt.Exec(cd.ServiceID, cd.Date, cd.Exception); err != nil {
+			return err
+		}
+	}
+
+	if _, err = stmt.Exec(); err != nil {
+		return
+	}
+
+	return tx.Commit()
+}
+

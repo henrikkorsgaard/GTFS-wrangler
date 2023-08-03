@@ -241,3 +241,36 @@ func TestIngestFetchCalendar(t *testing.T){
 	assert.NoError(t, err)
 	assert.Equal(t,len(data.Records), len(dbCalendar))
 }
+
+
+func TestIngestFetchCalendarDates(t *testing.T){
+
+	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
+	if err != nil {
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
+	}
+
+	gtfsFiles, err := ingest.ParseZipIntoFiles(zbytes)
+	if err != nil {
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
+	}
+
+	data := gtfsFiles[3]
+	calendarDates, err := ingest.UnmarshallCalendarDate(data.Header, data.Records)
+	if err != nil {
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
+	}
+
+	repo, err := NewRepository()
+	
+	if err != nil {
+		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())
+	}
+
+	err = repo.IngestCalendarDates(calendarDates)
+	assert.NoError(t, err)
+
+	dbCalendarDates, err :=  repo.FetchCalendarDates();
+	assert.NoError(t, err)
+	assert.Equal(t,len(data.Records), len(dbCalendarDates))
+}

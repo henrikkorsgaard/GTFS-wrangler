@@ -5,6 +5,7 @@ drop table if exists routes;
 drop table if exists shapes;
 drop table if exists stoptimes;
 drop table if exists calendar;
+drop table if exists calendar_dates;
 
 CREATE TABLE IF NOT EXISTS agency (
   id TEXT PRIMARY KEY,
@@ -92,6 +93,14 @@ CREATE TABLE IF NOT EXISTS calendar (
   start_date DATE NOT NULL,
   end_date DATE NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS calendar_dates (
+  service_id TEXT NOT NULL,
+  date DATE NOT NULL,
+  exception_type TEXT NOT NULL
+);
+
+
 
 /* Hertil */
 
