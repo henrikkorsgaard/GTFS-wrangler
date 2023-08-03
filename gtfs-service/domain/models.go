@@ -200,9 +200,9 @@ type Shape struct {
 	// this is weird that it is required
 	Lat					float64 `csv:"shape_pt_lat" required:"true"`
 	Lon					float64 `csv:"shape_pt_lon" required:"true"`
-	Sequence			string `csv:"shape_pt_sequence" required:"true"`
+	Sequence			int `csv:"shape_pt_sequence" required:"true"`
 	GeoLineString		geom.LineString
-	DistanceTraveled	string `csv:"shape_dist_traveled" required:"false"`
+	DistanceTraveled	float64 `csv:"shape_dist_traveled" required:"false"`
 }
 
 

@@ -9,6 +9,11 @@ import (
 	"henrikkorsgaard.dk/gtfs-service/ingest"
 )
 
+/* NOTES:
+- We combine the database ingest and fetch test because we have the expected number of items in the original CSV file. Except for Shape (because we combine uniques).
+- The gtfsFiles[index] index depends on the test data organization in the zip. If we change test data, the order of the files may change causing multiple tests to fail. 
+*/
+
 var (
 	testDataString string = "../testutils/data/GTFSDK.zip"
 )
@@ -147,7 +152,7 @@ func TestIngestFetchTrips(t *testing.T){
 	assert.Equal(t,len(data.Records), len(dbTrips))
 }
 
-func TestIngestShapes(t *testing.T){
+func TestIngestFetchShapes(t *testing.T){
 	zbytes, err := testutils.GetBytesFromZipFile(testDataString)
 	if err != nil {
 		t.Error("Unexpected error in test " + t.Name() + ": " + err.Error())

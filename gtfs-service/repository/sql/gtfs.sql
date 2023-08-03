@@ -101,13 +101,15 @@ CREATE TABLE IF NOT EXISTS calendar_dates (
 );
 
 
-
-/* Hertil */
-
 CREATE TABLE IF NOT EXISTS shapes (
-  id integer primary key,
-  geo_line geography(linestring,4326) not null
+  id TEXT PRIMARY KEY,
+  shape_pt_lat FLOAT NOT NULL,
+  shape_pt_lon FLOAT NOT NULL,
+  shape_pt_sequence INTEGER NOT NULL, /* this is pretty silly because we will override this when we combine shapes. This makes it useless, but we keep it until we know that everything is tested */
+  shape_dist_traveled FLOAT,
+  geo_line GEOGRAPHY(linestring,4326) NOT NULL /* Added column to handle geo queries */
 );
+
 
 
 

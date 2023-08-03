@@ -94,12 +94,12 @@ func (repo *repository) FetchTrips() (trips []domain.Trip, err error){
 
 func (repo *repository) FetchShapes() (shapes []domain.Shape, err error){
 
-	query := "SELECT id, ST_AsBinary(geo_line) FROM shapes;"
+	query := "SELECT id, shape_pt_lat, shape_pt_lon,shape_pt_sequence,shape_dist_traveled, ST_AsBinary(geo_line) FROM shapes;"
 
 	rowHandler := func(rs *sql.Rows) (err error){
 		s := domain.Shape{}
 		var ls ewkb.LineString
-		err = rs.Scan(&s.ID, &ls)
+		err = rs.Scan(&s.ID, &s.Lat, &s.Lon, &s.Sequence, &s.DistanceTraveled, &ls)
 		
 		if err != nil {
 			return

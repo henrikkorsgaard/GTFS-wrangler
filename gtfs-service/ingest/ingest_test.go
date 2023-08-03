@@ -8,6 +8,10 @@ import (
 	"henrikkorsgaard.dk/gtfs-service/testutils"
 )
 
+/* NOTES:
+- We ignore fare_attributes for now because they are not in our use-case or in the DK dataset.
+*/
+
 var (
 	testDataString string = "../testutils/data/GTFSDK.zip"
 )

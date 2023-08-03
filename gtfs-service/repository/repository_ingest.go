@@ -123,7 +123,7 @@ func (repo *repository) IngestShapes(shapes []domain.Shape) (err error){
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.Prepare(pq.CopyIn("shapes","id", "geo_line"))
+	stmt, err := tx.Prepare(pq.CopyIn("shapes","id", "shape_pt_lat","shape_pt_lon", "shape_pt_sequence","shape_dist_traveled","geo_line"))
 	if err != nil {
 		return
 	}
@@ -133,8 +133,8 @@ func (repo *repository) IngestShapes(shapes []domain.Shape) (err error){
 		if err != nil {
 			return err
 		}
-
-		if _, err = stmt.Exec(s.ID, ewkbhexGeom); err != nil {
+	
+		if _, err = stmt.Exec(s.ID, s.Lat, s.Lon, s.Sequence, s.DistanceTraveled, ewkbhexGeom); err != nil {
 			return err
 		}
 	}
