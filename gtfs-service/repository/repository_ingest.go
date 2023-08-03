@@ -20,7 +20,7 @@ func (repo *repository) IngestAgency(agency []domain.Agency) (err error) {
 
 	for _, a := range agency {	
 		
-		_, err = stmt.Exec(&a.ID, &a.Name,&a.URL, &a.Timezone,&a.Lang, &a.Phone, &a.FareURL,&a.Email)
+		_, err = stmt.Exec(a.ID, a.Name,a.URL, a.Timezone,a.Lang, a.Phone, a.FareURL,a.Email)
 
 		if err != nil {
 			return err
@@ -41,7 +41,7 @@ func (repo *repository) IngestStops(stops []domain.Stop) (err error){
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.Prepare(pq.CopyIn("stops","id","code", "name","description","location","zone_id","url", "location_type","parent_station","timezone","wheelchair_boarding", "level_id", "platform_code"))
+	stmt, err := tx.Prepare(pq.CopyIn("stops","id","code", "name","description","lat","lon", "location","zone_id","url", "location_type","parent_station","timezone","wheelchair_boarding", "level_id", "platform_code"))
 	if err != nil {
 		return
 	}
@@ -52,7 +52,7 @@ func (repo *repository) IngestStops(stops []domain.Stop) (err error){
 			return err
 		}
 
-		if _, err = stmt.Exec(&s.ID, &s.Code, &s.Name, &s.Description,ewkbhexGeom, &s.ZoneID,&s.URL, &s.LocationType, &s.ParentStation, &s.Timezone, &s.WheelchairBoarding,&s.LevelID, &s.PlatformCode); err != nil {
+		if _, err = stmt.Exec(s.ID, s.Code, s.Name, s.Description,s.Lat, s.Lon, ewkbhexGeom, s.ZoneID,s.URL, s.LocationType, s.ParentStation, s.Timezone, s.WheelchairBoarding,s.LevelID, s.PlatformCode); err != nil {
 			return err
 		}
 	}
@@ -123,7 +123,7 @@ func (repo *repository) IngestShapes(shapes []domain.Shape) (err error){
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.Prepare(pq.CopyIn("shapes","id", "shape_pt_lat","shape_pt_lon", "shape_pt_sequence","shape_dist_traveled","geo_line"))
+	stmt, err := tx.Prepare(pq.CopyIn("shapes","id", "lat","lon", "sequence","dist_traveled","geo_line"))
 	if err != nil {
 		return
 	}

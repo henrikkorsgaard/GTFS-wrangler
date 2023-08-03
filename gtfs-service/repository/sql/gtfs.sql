@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS stops (
   code TEXT,
   name TEXT NOT NULL,
   description TEXT,
+  lat FLOAT NOT NULL,
+  lon FLOAT NOT NULL,
   location geography(point, 4326) NOT NULL,
   zone_id TEXT,
   url TEXT,
@@ -103,10 +105,10 @@ CREATE TABLE IF NOT EXISTS calendar_dates (
 
 CREATE TABLE IF NOT EXISTS shapes (
   id TEXT PRIMARY KEY,
-  shape_pt_lat FLOAT NOT NULL,
-  shape_pt_lon FLOAT NOT NULL,
-  shape_pt_sequence INTEGER NOT NULL, /* this is pretty silly because we will override this when we combine shapes. This makes it useless, but we keep it until we know that everything is tested */
-  shape_dist_traveled FLOAT,
+  lat FLOAT NOT NULL,
+  lon FLOAT NOT NULL,
+  sequence INTEGER NOT NULL, /* this is pretty silly because we will override this when we combine shapes. This makes it useless, but we keep it until we know that everything is tested */
+  dist_traveled FLOAT,
   geo_line GEOGRAPHY(linestring,4326) NOT NULL /* Added column to handle geo queries */
 );
 

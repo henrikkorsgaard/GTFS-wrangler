@@ -28,14 +28,14 @@ func (repo *repository) FetchAgency() (agency []domain.Agency, err error){
 }
 
 func (repo *repository) FetchStops() (stops []domain.Stop, err error){
-	query := "SELECT id, code, name, description, ST_AsBinary(location), zone_id, url, location_type, parent_station, timezone, wheelchair_boarding, level_id, platform_code FROM stops;"
+	query := "SELECT id, code, name, description, lat, lon, ST_AsBinary(location), zone_id, url, location_type, parent_station, timezone, wheelchair_boarding, level_id, platform_code FROM stops;"
 	
 	rowHandler := func(rs *sql.Rows) (err error){
 		
 		s := domain.Stop{}
 		var p ewkb.Point
 		
-		err = rs.Scan(&s.ID, &s.Code, &s.Name, &s.Description,&p, &s.ZoneID,&s.URL, &s.LocationType, &s.ParentStation, &s.Timezone, &s.WheelchairBoarding,&s.LevelID, &s.PlatformCode)
+		err = rs.Scan(&s.ID, &s.Code, &s.Name, &s.Description,&s.Lat, &s.Lon, &p, &s.ZoneID,&s.URL, &s.LocationType, &s.ParentStation, &s.Timezone, &s.WheelchairBoarding,&s.LevelID, &s.PlatformCode)
 		if err != nil {
 			return 
 		}
@@ -94,7 +94,7 @@ func (repo *repository) FetchTrips() (trips []domain.Trip, err error){
 
 func (repo *repository) FetchShapes() (shapes []domain.Shape, err error){
 
-	query := "SELECT id, shape_pt_lat, shape_pt_lon,shape_pt_sequence,shape_dist_traveled, ST_AsBinary(geo_line) FROM shapes;"
+	query := "SELECT id,lat,lon,sequence,dist_traveled, ST_AsBinary(geo_line) FROM shapes;"
 
 	rowHandler := func(rs *sql.Rows) (err error){
 		s := domain.Shape{}
