@@ -8,6 +8,22 @@ This is a small micro service that will do the following:
 
 I'm developing this because I need a GTFS microservice for Danish GTFS data for specific projects. With that goal in mind, I prioritize features that are required by the other projects. 
 
+## TODO
+
+- Ingest and repository
+    - Implement attributions.txt
+    - Implement transfers.txt
+
+- Rest API 
+    - Write simple server
+    - Implement Stops
+    - Implement Trips
+    - Implement Routes
+    - Implement Shapes
+
+- GraphQL
+    - Implement Stops as Proof-of-concept
+
 ## A note on the tests and test data
 I try to add tests for each part of the codebase as I implement the features. The tests are not designed to or have perfect coverage (e.g. database fetch does not check values, just that the number of rows match). I use them to guide my implementation and check that new stuff does not break old stuff. 
 

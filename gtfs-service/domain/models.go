@@ -1,15 +1,6 @@
 package domain
 /* Models based on spec: https://developers.google.com/transit/	gtfs/reference
- Currently only support primitive types, because I use golang reflect package to unmarshal
 
- I lump required and conditionally required together
- (until I see everythibg breaks)
-
- TODO:
- Change type for int and float
- Capture enum types through int -> enum definition
- See if we can doe something clever with reflect and structField tags to 
- simplify the calls throughout
 */ 
 
 import (
