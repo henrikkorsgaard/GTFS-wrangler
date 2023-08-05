@@ -12,5 +12,6 @@ func init(){
 }
 
 func TestGetStops(t *testing.T) {
+	Serve()
 	assert.Equal(t, true, false)
 }
