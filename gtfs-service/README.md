@@ -10,6 +10,11 @@ I'm developing this because I need a GTFS microservice for Danish GTFS data for 
 
 ## TODO
 
+- Major refactoring todo:
+    - Change the csv key for the models to json for all, and then change the reflect key in ingest.go#L231
+    - Figure out how to marshal/unmarshal external structs. I'd rather not use embeddings for this, but that might be the result: https://betterstack.com/community/guides/scaling-go/json-in-go/
+        - https://stackoverflow.com/questions/48412154/custom-json-marshaling-for-external-packages
+
 - Ingest and repository
     - Implement attributions.txt
     - Implement transfers.txt
