@@ -34,13 +34,9 @@ func (s NullString) Value() (driver.Value, error) {
     return string(s), nil
 }
 
-type LoadProgress struct {
-	Filename	string
-	Percent 	int
-	RowLength	int
-	Index		int
-	Message 	string
-	Done		bool
+//https://gobyexample.com/struct-embedding
+type JSONGeoPoint {
+	geom.Point
 }
 
 type GTFS struct {
