@@ -40,7 +40,7 @@ func (repo *repository) FetchStops() (stops []domain.Stop, err error){
 			return 
 		}
 
-		s.GeoPoint = *p.Point
+		s.GeoPoint = domain.JSONGeoPoint{*p.Point}
 		stops = append(stops, s)
 		return
 	}

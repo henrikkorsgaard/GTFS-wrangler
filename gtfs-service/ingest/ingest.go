@@ -158,7 +158,9 @@ func UnmarshallStops(header []string, rows[][]string) (stops []domain.Stop, err 
 		p.SetSRID(4326)
 		// This will panic -- handle when we implement full logging.
 		p.MustSetCoords(geom.Coord{stops[i].Lon,stops[i].Lat})
-		stops[i].GeoPoint = *p
+		
+		pp := domain.JSONGeoPoint{*p}
+		stops[i].GeoPoint = pp
 	}
 
 	return  

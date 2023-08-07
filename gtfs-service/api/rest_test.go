@@ -45,7 +45,9 @@ func TestStopHandler(t *testing.T) {
 
 	point.MustSetCoords(geom.Coord{10.345034934460,55.354917787122})
 
-	testStop := domain.Stop{ID:"000461011300", Name:"Dyrupgårds Alle (Odense Kommune)",Lat: 0, Lon: 0, GeoPoint:*point}
+	gpoint := domain.JSONGeoPoint{*point}
+
+	testStop := domain.Stop{ID:"000461011300", Name:"Dyrupgårds Alle (Odense Kommune)",Lat: 0, Lon: 0, GeoPoint:gpoint}
 
 	stops := []domain.Stop{testStop}
 	repo, err := repository.NewRepository()

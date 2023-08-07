@@ -4,7 +4,8 @@ package domain
 */ 
 
 import (
-	"github.com/twpayne/go-geom"	
+	"github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom/encoding/geojson"		
 	"database/sql/driver"
     "errors"
 )
@@ -35,9 +36,30 @@ func (s NullString) Value() (driver.Value, error) {
 }
 
 //https://gobyexample.com/struct-embedding
-type JSONGeoPoint {
+type JSONGeoPoint struct {
 	geom.Point
 }
+
+func (gp *JSONGeoPoint) MarshalJSON() ([]byte, error) {
+	return geojson.Marshal(&gp.Point)
+}
+
+func (gp *JSONGeoPoint) UnmarshalJSON(input []byte) error {
+	var g geom.T
+	err :=  geojson.Unmarshal(input, &g)
+	if err != nil {
+		return err
+	}
+
+	v, ok := g.(*geom.Point)
+	if ok {
+		gp.Point = *v
+		gp.Point.SetSRID(4326)
+	}
+
+	return nil
+}
+
 
 type GTFS struct {
 	Agencies 		[]Agency		`csv:"agency.txt" required:"true"`
@@ -77,7 +99,7 @@ type Stop struct {
 	Code	 			string `csv:"stop_code" required:"false"`
 	Name				string `csv:"stop_name" required:"true", json:"stop_name"`
 	Description			string `csv:"stop_desc" required:"false"`
-	GeoPoint geom.Point `json:"geo_point"` // I could use wbk.Point, but that is for encoding/decoding primarily. Until I know more I stick witht he more basic geom.Point
+	GeoPoint JSONGeoPoint `json:"geo_point"` // I could use wbk.Point, but that is for encoding/decoding primarily. Until I know more I stick witht he more basic geom.Point
 	Lat					float64 `csv:"stop_lat" required:"true" json:"stop_lat"`
 	Lon    				float64 `csv:"stop_lon" required:"true"  json:"stop_lon"`
 	ZoneID				string `csv:"zone_id" required:"false"`   // only required if having fare_rules.txt in the dataset. We need some way of validating that.

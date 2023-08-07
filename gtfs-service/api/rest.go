@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"encoding/json"
 	"net/http"
 	"henrikkorsgaard.dk/gtfs-service/domain"
@@ -30,6 +31,7 @@ func StopHandler(w http.ResponseWriter, r *http.Request) {
 
 	jsonBytes, err := json.Marshal(reply)
 	if err != nil {
+		fmt.Println("this it?")
 		panic(err) // we need to handle this later
 	}
 

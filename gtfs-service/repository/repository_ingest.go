@@ -45,9 +45,9 @@ func (repo *repository) IngestStops(stops []domain.Stop) (err error){
 	if err != nil {
 		return
 	}
-
+	
 	for _, s := range stops {	
-		ewkbhexGeom, err := ewkbhex.Encode(&s.GeoPoint, ewkbhex.NDR)
+		ewkbhexGeom, err := ewkbhex.Encode(&s.GeoPoint.Point, ewkbhex.NDR)
 		if err != nil {
 			return err
 		}
